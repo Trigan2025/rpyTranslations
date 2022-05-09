@@ -2,7 +2,8 @@
 import sys, os.path, re
 from unicodedata import normalize as NZ, is_normalized as isNZ
 from textwrap import dedent
-__all__=['populate','fixEmpty','check','reorder']
+__all__=['populate','fixEmpty','check','reorder','diff']
+# TODO: Translations integration for the documentation
 
 class StrPipe:
 	def __init__(self):
@@ -22,6 +23,13 @@ def Error(*args, code=1, file=None, **kwargs):
 	else: print(*args, file=sys.stderr, **kwargs)
 	exit(code)
 
+def Line(FL, pos):
+	xpos, L = FL[0], 0
+	while pos > xpos:
+		L += 1
+		xpos += FL[L]
+	return L
+
 # Old strings should always be double-quote strings such as extracted by Ren'Py, new strings can be otherwise.
 reDQ = r'"(\\"|[^"])*"'
 reSQ = r"'(\\'|[^'])*'"
@@ -35,6 +43,7 @@ rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
 
 reString = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+(?P<old>{old})(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+(?P<new>{new})(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'
+reStringCmt = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+#(?P<old>{old})(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+#(?P<new>{new})(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'# This is mainly to use with the 'diff' command
 reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +([a-zA-Z_]+[a-zA-Z_0-9]*) *:\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
 # The final `(\r?\n)?` is to ease and enance the work of 'fixEmpty' and 'reorder' functions.
 
@@ -56,7 +65,7 @@ def N_str(s):
 
 def cmp(str1, str2):
 	"""This function try to estimate the proxymity between two strings.
-	Please note that this can hardly be precise, error-free and brief.
+	Please note that this can hardly be precise and error-free.
 	"""
 	score = count = i = 0
 	s1,s2 = [x.encode() for x in RE_S.split(NZ('NFKD',str1))],[x.encode() for x in RE_S.split(NZ('NFKD',str2))]
@@ -73,6 +82,293 @@ def cmp(str1, str2):
 				break
 	return score/count
 
+def diff(forFiles, *FromFiles, verbose=0, debug=False):
+	"""\
+	forFiles: List - The list of files where differences of translation need to be compared.
+	FromFiles: List,... - Successions of list of files from where to get other translations.
+	verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+	debug: Booleen - Active or not the debuging. The amount in this function can be huge.
+	"""
+	Verb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=1 else None
+	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
+	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
+	for fromFiles in FromFiles:
+		if len(forFiles) != len(fromFiles):
+			Throw(Exception,"The length of both list of files need to be equal")
+		for forF, fromF in zip(forFiles, fromFiles):
+			if not os.path.isfile(forF):
+				Throw(FileNotFoundError,repr(forF),"doen't exist or is not a file")
+			if not os.path.isfile(fromF):
+				Throw(FileNotFoundError,repr(fromF),"doen't exist or is not a file")
+			if forF == fromF:
+				Throw(Exception,"Both list of files need to have their files different")
+
+	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
+	RE_stringCmt = re.compile(reStringCmt.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	file_cache, frm_res = {}, {}
+	for fromFiles in FromFiles:# file caching loop
+		for forF, fromF in zip(forFiles, fromFiles):
+			Debug('forFile:',repr(forF))
+			if not forF in file_cache.keys():
+				F = ""
+				with open(forF, 'r', newline='') as f:
+					L, file_cache[forF+':L'] = 0, []
+					for line in f:
+						L += len(line)
+						file_cache[forF+':L'].append(len(line))
+						F += line
+					Debug('Debug: total size:',L,'; lines:',len(file_cache[forF+':L']))
+				file_cache[forF] = F
+			Debug('fromFile:',repr(fromF))
+			if not fromF in file_cache.keys():
+				F = ""
+				with open(fromF, 'r', newline='') as f:
+					L, file_cache[forF+':L'] = 0, []
+					for line in f:
+						L += len(line)
+						file_cache[forF+':L'].append(len(line))
+						F += line
+					Debug('Debug: total size:',L,'; lines:',len(file_cache[forF+':L']))
+				file_cache[fromF] = F
+
+	def get_M(M1, M2, M3):
+		M, T = None, 0
+		if not M1 is None and not M3 is None and not M2 is None:
+			if M2.start() < M1.start():
+				if M2.start() < M3.start():
+					M, T = M2, 1
+				else:
+					M, T = M3, 2
+			elif M1.start() < M3.start():
+				M, T = M1, 0
+			else:
+				M, T = M_stringCmt, 2
+		elif not M2 is None:
+			if not M3 is None and M3.start() < M2.start():
+				M, T = M_stringCmt, 2
+			else:
+				M, T = M2, 1
+		elif not M1 is None:
+			if not M3 is None and M3.start() < M1.start():
+				M, T = M3, 2
+			else:
+				M, T = M1, 0
+		else:
+			M, T = M3, 2
+		return M, T
+	for fromFiles in FromFiles:# process loop
+		for forF, fromF in zip(forFiles, fromFiles):
+			Verb('forFile:',repr(forF))
+			Verb('fromFile:',repr(fromF))
+			_for_spans, _from_spans, res = [], [], ([],[])
+			# checking for removed ones and the general differences
+			pos = 0
+			M, M_from, T, M_string, M_stringCmt, M_dialog = None, None, 0, RE_string.search(file_cache[fromF], pos), RE_stringCmt.search(file_cache[fromF], pos), RE_dialog.search(file_cache[fromF], pos)
+			while not (M_string is None and M_stringCmt is None and M_dialog is None):
+				M, T = get_M(M_string, M_dialog, M_stringCmt)
+				M_from, T_from, Pass = None, 0, not RE_pass.match(M.group('new')) is None
+				Debug(f'Debug:match span {M.span()} is:\n{M.group()!r}')
+				Debug("Debug: new_str group =",repr(M.group('new_str')) if not Pass else 'pass')
+				if T == 1:
+					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+					M_from = m_from = _RE_dialog.search(file_cache[forF])
+					T_from = 1
+					while not m_from is None and m_from.span() in _for_spans:
+						m_from = _RE_dialog.search(file_cache[forF], m_from.end())
+						if not (m_from is None or m_from.span() in _for_spans):
+							M_from = m_from
+				else:
+					_RE_string = re.compile(reString.format(old=re.escape(M.group('old')), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
+					_RE_stringCmt = re.compile(reStringCmt.format(old=re.escape(M.group('old')), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
+					M_from = m_from = _RE_string.search(file_cache[forF])
+					T_from = 0
+					while not m_from is None and m_from.span() in _for_spans:
+						m_from = _RE_string.search(file_cache[forF], m_from.end())
+						if not (m_from is None or m_from.span() in _for_spans):
+							M_from = m_from
+					if M_from is None:
+						T_from = 3
+						M_from = m_from = _RE_stringCmt.search(file_cache[forF])
+						while not m_from is None and m_from.span() in _for_spans:
+							m_from = _RE_stringCmt.search(file_cache[forF], m_from.end())
+							if not (m_from is None or m_from.span() in _for_spans):
+								M_from = m_from
+				if M_from is None:
+					xVerb("Is removed:",repr(M.group('old')))
+					res[0].append((*M.span(),M.group()))
+				else:
+					_for_spans.append(M_from.span())
+					_res = []
+					if not M.group('file') is None:
+						if M_from.group('file') is None:
+							rf = ':'.join((M.group('file'),M.group('line')))
+							xVerb("The reference-line is removed:",rf)
+							_res.append(("reference-line","removed",rf))
+						elif M.group('file') != M_from.group('file'):
+							rf = ':'.join((M.group('file'),M.group('line')))
+							to_rf = ':'.join((M_from.group('file'),M_from.group('line')))
+							xVerb("The file of the reference-line as changed from:",rf,"to:",to_rf)
+							_res.append(("reference-line","file",rf,to_rf))
+						elif M.group('line') != M_from.group('line'):
+							rf = ':'.join((M.group('file'),M.group('line')))
+							to_rf = ':'.join((M_from.group('file'),M_from.group('line')))
+							xVerb("The line in the reference-line as changed from:",rf,"to:",to_rf)
+							_res.append(("reference-line","line",rf,to_rf))
+					if T == 2:
+						if T_from == 0:
+							xVerb("As been uncommented:",repr(M.group('old')))
+							_res.append(("commented",False))
+					elif T == 0:
+						if T_from == 2:
+							xVerb("As been commented:",repr(M.group('old')))
+							_res.append(("commented",True))
+					if Pass:
+						if RE_pass.match(M_from.group('new')) is None:
+							xVerb("As been unset from pass:",repr(M.group('old')))
+							_res.append(("pass",False))
+					elif M.group('new') != M_from.group('new'):
+						D = 0
+						if not RE_pass.match(M_from.group('new')) is None:
+							xVerb("As been set to pass:",repr(M.group('old')))
+							_res.append(("pass",True))
+							D += 1
+						elif M.group('new_str') == '""':
+							xVerb("Are get a translation:",repr(M.group('old')))
+							_res.append(("empty",False,M_from.group('new')))
+							D += 1
+						elif M_from.group('new_str') == '""':
+							xVerb("Are loose his translation:",repr(M.group('old')))
+							_res.append(("empty",True,M.group('new')))
+							D += 1
+						else:
+							o_str,n_str = eval(M.group('new_str')),eval(M_from.group('new_str'))# since we now they are string, np
+							o,n = re.search(r'^\s*', o_str),re.search(r'^\s*', n_str)
+							if o.group() != n.group():
+								_res.append((o.span(),"Leading white-spaces","start",repr(o.group()),repr(n.group())))
+								D += 1
+							o,n = re.search(r'\s*$', o_str),re.search(r'\s*$', n_str)
+							if o.group() != n.group():
+								_res.append((o.span(),"Leading white-spaces","end",repr(o.group()),repr(n.group())))
+								D += 1
+							rx=r'({{(\\}}|}?[^}])*}})|({(\\}|[^}])*})|(\[(\\\]|[^]])*\])'
+							RE_x = re.compile(r'\s*{x}\s*'.format(x=rx))
+							o,n, n_end = RE_x.search(o_str),RE_x.search(n_str), 0
+							while not o is None:
+								if n is None:
+									_res.append((o.span(),"Formating",repr(o.group()),None))
+									D += 1
+								elif o.group() != n.group():
+									n_end = n.end()
+									_o,_n = re.search(rx, o.group()),re.search(rx, n.group())
+									if _o.group() != _n.group():
+										_res.append((o.span(),"Formating",repr(o.group()),repr(n.group())))
+										D += 1
+									else:
+										_o,_n = re.search(r'^\s*', o.group()),re.search(r'^\s*', n.group())
+										if _o.group() != _n.group():
+											_res.append((o.span(),"Leading white-spaces",_o.span(),repr(o.group()),repr(n.group())))
+											D += 1
+										_o,_n = re.search(r'\s*$', o.group()),re.search(r'\s*$', n.group())
+										if _o.group() != _n.group():
+											_res.append((o.span(),"Leading white-spaces",_o.span(),repr(o.group()),repr(n.group())))
+											D += 1
+								else: n_end = n.end()
+								o,n = RE_x.search(o_str, o.end()),RE_x.search(n_str, n_end)
+						if D == 0:# another kind of difference
+							_res.append(("diff",M.group('new'),M_from.group('new')))
+					if _res != []:
+						res[0].append((*M.span(),_res))
+				pos = M.end()
+				M_string, M_stringCmt, M_dialog = RE_string.search(file_cache[fromF], pos), RE_stringCmt.search(file_cache[fromF], pos), RE_dialog.search(file_cache[fromF], pos)
+			# checking for added ones
+			pos = 0
+			M, T, M_string, M_stringCmt, M_dialog = None, 0, RE_string.search(file_cache[forF], pos), RE_stringCmt.search(file_cache[forF], pos), RE_dialog.search(file_cache[forF], pos)
+			while not (M_string is None and M_stringCmt is None and M_dialog is None):
+				M, T = get_M(M_string, M_dialog, M_stringCmt)
+				if M.span() in _for_spans:
+					pos = M.end()
+					M_string, M_stringCmt, M_dialog = RE_string.search(file_cache[forF], pos), RE_stringCmt.search(file_cache[forF], pos), RE_dialog.search(file_cache[forF], pos)
+					continue
+				Pass = not RE_pass.match(M.group('new')) is None
+				# _for_spans contain all matching span with fromFile, so if we're here we already now it's add
+				if Pass:
+					xVerb("Set to pass but added:",repr(M.group('old')))
+					res[1].append((*M.span(),"passed"))
+				elif T == 3:
+					xVerb("Commented but added:",repr(M.group('old')))
+					res[1].append((*M.span(),"commented"))
+				elif M.group('new_str') == '""':
+					xVerb("Empty but added:",repr(M.group('old')))
+					res[1].append((*M.span(),"empty"))
+				else:
+					xVerb("Added:",repr(M.group('old')))
+					res[1].append((*M.span(),"added",M.group('new')))
+				pos = M.end()
+				M_string, M_stringCmt, M_dialog = RE_string.search(file_cache[forF], pos), RE_stringCmt.search(file_cache[forF], pos), RE_dialog.search(file_cache[forF], pos)
+			if res != ([],[]):
+				if not forF in frm_res.keys(): frm_res[forF] = {}
+				frm_res[forF][fromF] = res
+
+	for forF, frmF in frm_res.items():
+		S, fromFiles = f"For: {forF}", sorted(frmF.keys())
+		for fromF in fromFiles:
+			S += f"\nFrom: {fromF}"
+			if len(frmF[fromF][1]) > 0:
+				for k in frmF[fromF][1]:
+					at = [str(Line(file_cache[forF+':L'], n)) for n in k[:2]]
+					S += f"\n+@Lines {':'.join(at)}:"
+					if k[2] == "added":
+						S += f" ADDED\n\t{k[3]}"
+					elif k[2] == "passed":
+						S += " ADDED but set with 'pass'"
+					else:
+						S += f" ADDED but {k[2]}"
+			if len(frmF[fromF][0]) > 0:
+				for k in frmF[fromF][0]:
+					at = [str(Line(file_cache[forF+':L'], n)) for n in k[:2]]
+					if isinstance(k[2], str):
+						S += f"\n-@Lines {':'.join(at)}: REMOVED"
+					else:
+						for frm in k[2]:
+							S += f"\n-@Lines {':'.join(at)}:"
+							if frm[0] == "reference-line":
+								if frm[1] == "file":
+									S += f" Reference-line file changed\n\tFrom: {frm[2]} To: {frm[3]}"
+								elif frm[1] == "line":
+									S += f" Reference-line line changed\n\tFrom: {frm[2]} To: {frm[3]}"
+								else:# frm[1] == "removed":
+									S += f" Reference-line removed ({frm[2]})"
+							elif frm[0] == "commented":
+								if frm[1]: S += " COMMENTED"
+								else: S += " UNCOMMENTED"
+							elif frm[0] == "pass":
+								if frm[1]: S += " SET TO PASS"
+								else: S += " UNSET TO PASS"
+							elif frm[0] == "empty":
+								if frm[1]: S += f" NEW: The following as been add from EMPTY\n\t"+repr(frm[2])
+								else: S += " LOST: The following as been changed to EMPTY\n\t"+repr(frm[2])
+							elif frm[0] == "diff":
+								S += f"\n\t{frm[1]!r}\n\tdiffers from: {frm[2]!r}"
+							elif frm[1] == "Leading white-spaces":
+								at_pos = [str(n) for n in frm[0]]
+								if frm[2] in ("start","end"):
+									S += f"\n\t@ {':'.join(at_pos)}: Leading white-spaces at {frm[2]}:"
+								else:
+									into = [str(n) for n in frm[2]]
+									S += f"\n\t@ {':'.join(at_pos)}: Leading white-spaces at {':'.join(into)}:"
+								S += f"\n\t\t{frm[3]} differs from: {frm[4]}"
+							else:# frm[1] == "Formating":
+								at_pos = [str(n) for n in frm[0]]
+								S += f"\n\t@ {':'.join(at_pos)}: Formating:"
+								if not frm[3] is None:
+									S += f"\n\t\t{frm[2]} differs from: {frm[3]}"
+								else: S += f"\n\t\t{frm[2]} is missing in this translation"
+		Verb(S)
+		fPath = os.path.split(forF)
+		fName = os.path.splitext(fPath[1])[0]+'.diff'
+		with open(os.path.join(fPath[0],fName), 'w') as f:
+			f.write(S)
 
 def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False):
 	"""\
@@ -96,13 +392,6 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 		if not os.path.isfile(forF):
 			Throw(FileNotFoundError,repr(forF),"doen't exist or is not a file")
 		if forF in forFiles[:i]: Throw(Exception,"All files need to be different")
-
-	def Line(FL, pos):
-		xpos, L = FL[0], 0
-		while pos > xpos:
-			L += 1
-			xpos += FL[L]
-		return L
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
@@ -572,7 +861,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 if __name__ == '__main__':
 	Cmd, verbose, dbg = None, 0, False
 	#print("Debug: args =",sys.argv)
-	Cmds = ('populate','fix-empty','check','reorder','--help')
+	Cmds = ('populate','fix-empty','check','diff','reorder','--help')
 	Cmd = sys.argv.pop(1)
 	if not Cmd in (*Cmds,'-h'):
 		Error("Invalide argument: the 1st argument need to one of the following:",', '.join(Cmds),"\n  not",Cmd)
@@ -698,6 +987,33 @@ if __name__ == '__main__':
 		      Check if the translations had keep all kinds of formating and that leading white-spaces are
 		       respected.
 		      * Formatings like brackets ([]) and braces ({}).
+		  -v [lvl], --verbose [lvl]
+		      Activate the verbosity during the process.
+		      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.
+		  -d, --debug
+		      Activate the debug printings during the process. The output can be huge.
+		* Please note that --skip-empty take precedence over --not-translate that take precedence over --empty.
+		"""))
+		if len(sys.argv) != 2: Error("Invalide argument: help commands do not accept any argument or option.")
+		exit()
+	elif Cmd == 'diff' and sys.argv[1] in ('-h','--help'):
+		print(dedent("""\
+		rpyTranslations diff [--help] for_files... [options]
+
+		for_files and from_files are successions of files and both need to be of equal length.
+		for_files are the files where differences of translation need to be compared.
+		from_files are the reference files from where other translations is get for comparing.
+
+		Since this command is for comparing adds and removing in the for files, there is no proxy option, and
+		 obviousely, empty translation and the 'pass' keyword are treat as different.
+
+		options:
+		  -h, --help
+		      Show this specific help for the 'diff' command and exit.
+		  -% n, --multi n, --lists n
+		      This allow to give the number of list from where other translations are get. This include the
+		       first group of files (the for_files).
+		      So, for 2 from_files, you should put it with 3.
 		  -v [lvl], --verbose [lvl]
 		      Activate the verbosity during the process.
 		      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.
@@ -865,6 +1181,34 @@ if __name__ == '__main__':
 		files = sys.argv[1:]
 		if dbg: print(f"Debug: check({files}, untranslated={UnT}, formats={F!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'untranslated':UnT,'formats':F,'verbose':verbose,'debug':dbg}
+	elif Cmd == 'diff':
+		UnT, F = 1, False
+		if '-%' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('-%')+1)
+			try: N = int(N)
+			except: Error("Invalide argument: -% option should be an integer, give",N)
+			sys.argv.remove('-%')
+		elif '--multi' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('--multi')+1)
+			try: N = int(N)
+			except: Error("Invalide argument: --multi option should be an integer, give",N)
+			sys.argv.remove('--multi')
+		elif '--lists' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('--lists')+1)
+			try: N = int(N)
+			except: Error("Invalide argument: --lists option should be an integer, give",N)
+			sys.argv.remove('--lists')
+		argc = len(sys.argv)-1
+		if argc%N != 0:
+			Error("The file pair lists need to have equal length,",argc,"gived.")
+		N = argc//N
+		files1 = sys.argv[1:N+1]
+		files2 = []
+		for i,f in enumerate(sys.argv[1+N:]):
+			if i%N == 0: files2.append([f])
+			else: files2[-1].append(f)
+		if dbg: print(f"Debug: diff({files1}, {files2}, verbose={verbose}, debug={dbg})")
+		args,kargs = [files1,*files2], {'verbose':verbose,'debug':dbg}
 	elif Cmd == 'reorder':
 		D, R, P = None, False, False
 		if '-o' in sys.argv:
@@ -894,6 +1238,8 @@ if __name__ == '__main__':
 			fixEmpty(*args, **kargs)
 		elif Cmd == 'check':
 			check(*args, **kargs)
+		elif Cmd == 'diff':
+			diff(*args, **kargs)
 		elif Cmd == 'reorder':
 			reorder(*args, **kargs)
 	except Exception as exc:
