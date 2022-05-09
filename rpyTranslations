@@ -3,7 +3,7 @@ set +o history
 cur_dir=$PWD
 if [ "$1" == '-h' -o "$1" == '--help' ]; then
    args="$1"
-   echo "rpyTranslations (populate|fix-empty|check|reorder|--help) [args] [options]"
+   echo "rpyTranslations (populate|fix-empty|check|diff|reorder|--help) [args] [options]"
    shift
 fi
 while test $# -gt 0; do
