@@ -873,7 +873,6 @@ debug: Booleen - Active or not the debuging. The amount in this function can be 
 
 if __name__ == '__main__':
 	Cmd, verbose, dbg = None, 0, False
-	#print("Debug: args =",sys.argv)
 	Cmds = ('populate','fix-empty','check','diff','reorder','--help')
 	Cmd = sys.argv.pop(1)
 	if not Cmd in (*Cmds,'-h'):
@@ -1099,6 +1098,7 @@ if __name__ == '__main__':
 	elif '--debug' in sys.argv:
 		dbg = True
 		sys.argv.remove('--debug')
+	if dbg: print("Debug: args =",sys.argv)
 	if Cmd == 'populate':
 		O, D, N = 'N', None, 2
 		if '-f' in sys.argv:
@@ -1201,7 +1201,7 @@ if __name__ == '__main__':
 		if dbg: print(f"Debug: check({files}, untranslated={UnT}, formats={F!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'untranslated':UnT,'formats':F,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'diff':
-		UnT, F = 1, False
+		N = 2
 		if '-%' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
