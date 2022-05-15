@@ -657,7 +657,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 		while not M_dialog is None:
 			M = M_dialog
 			if reverse:
-				tr_id = (M.group('file'),int(M.group('line')),M.group('start')) if not M.group('file') is None else None
+				tr_id = (M.group('file'),int(M.group('line')),M.start())) if not M.group('file') is None else None
 			else:
 				tr_id = N_str(M.group('old_str')) if proxy else M.group('old_str')
 			if not tr_id is None:
