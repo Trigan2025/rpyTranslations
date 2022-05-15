@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys, os, os.path, re, locale, gettext
-from unicodedata import normalize as NZ, is_normalized as isNZ
+from unicodedata import normalize as NZ
 from textwrap import dedent
 __all__=['populate','fixEmpty','check','reorder','diff']
 
@@ -40,7 +40,7 @@ def Line(FL, pos):
 	while pos > xpos:
 		L += 1
 		xpos += FL[L]
-	return L
+	return L+1
 
 # Old strings should always be double-quote strings such as extracted by Ren'Py, new strings can be otherwise.
 reDQ = r'"(\\"|[^"])*"'
@@ -49,14 +49,14 @@ reTDQ = r'"""(\\"|""?[^"]|[^"])*"""'
 reTSQ = r"'''(\\'|''?[^']|[^'])*'''"
 reQ = r'('+reTDQ+r'|'+reTSQ+r'|'+reDQ+r'|'+reSQ+r')'
 reP = r'(?P<p>_p\()?{Q}(?(p)\))'.format(Q=reQ)
-reN = r'[a-zA-Z_]+[a-zA-Z_0-9]*( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'
+reN = r'({SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
 rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '[' and reQ
 rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
 
-reString = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+(?P<old>{old})(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+(?P<new>{new})(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'
-reStringCmt = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+#(?P<old>{old})(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+#(?P<new>{new})(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'# This is mainly to use with the 'diff' command
-reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +([a-zA-Z_]+[a-zA-Z_0-9]*) *:\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
+reString = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'
+reStringCmt = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+#(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+#(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'# This is mainly to use with the 'diff' command
+reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +([a-zA-Z_]+[a-zA-Z_0-9]*) *:([ \t]+#[^\n]*)?\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
 # The final `(\r?\n)?` is to ease and enance the work of 'fixEmpty' and 'reorder' functions.
 
 RE_S = re.compile(r'\s+')# for splittings
@@ -337,12 +337,12 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 						S += f"\n-@Lines {':'.join(at)}: REMOVED"
 					else:
 						for frm in k[2]:
-							S += f"\n-@Lines {':'.join(at)}:"
+							S += f"\n!@Lines {':'.join(at)}:"
 							if frm[0] == "reference-line":
 								if frm[1] == "file":
-									S += f" Reference-line file changed\n\tFrom: {frm[2]} To: {frm[3]}"
+									S += f" Reference-line file changed\n<\t{frm[2]}\n>\t{frm[3]}"
 								elif frm[1] == "line":
-									S += f" Reference-line line changed\n\tFrom: {frm[2]} To: {frm[3]}"
+									S += f" Reference-line line changed\n<\t{frm[2]}\n>\t{frm[3]}"
 								else:# frm[1] == "removed":
 									S += f" Reference-line removed ({frm[2]})"
 							elif frm[0] == "commented":
@@ -355,7 +355,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 								if frm[1]: S += f" NEW: The following as been add from EMPTY\n\t"+repr(frm[2])
 								else: S += " LOST: The following as been changed to EMPTY\n\t"+repr(frm[2])
 							elif frm[0] == "diff":
-								S += f"\n\t{frm[1]!r}\n\tdiffers from: {frm[2]!r}"
+								S += f"\n<\t{frm[1]!r}\n>\t{frm[2]!r}"
 							elif frm[1] == "Leading white-spaces":
 								at_pos = [str(n) for n in frm[0]]
 								if frm[2] in ("start","end"):
@@ -363,13 +363,13 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 								else:
 									into = [str(n) for n in frm[2]]
 									S += f"\n\t@ {':'.join(at_pos)}: Leading white-spaces at {':'.join(into)}:"
-								S += f"\n\t\t{frm[3]} differs from: {frm[4]}"
+								S += f"\n\t<\t{frm[3]}\n\t>\t{frm[4]}"
 							else:# frm[1] == "Formating":
 								at_pos = [str(n) for n in frm[0]]
 								S += f"\n\t@ {':'.join(at_pos)}: Formating:"
 								if not frm[3] is None:
-									S += f"\n\t\t{frm[2]} differs from: {frm[3]}"
-								else: S += f"\n\t\t{frm[2]} is missing in this translation"
+									S += f"\n\t<\t{frm[2]}\n\t>\t{frm[3]}"
+								else: S += f"\n\t<\t{frm[2]}\n\t-\tmissing in this translation"
 		Verb(S)
 		fPath = os.path.split(forF)
 		fName = os.path.splitext(fPath[1])[0]+'.diff'
@@ -426,7 +426,8 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 			Debug(f'Debug:match span {M.span()} is:\n{M.group()!r}')
 			Debug("Debug: new_str group =",repr(M.group('new_str')) if not Pass else 'pass')
 			if Pass or M.group('new_str') == '""':
-				if untranslated == 2:
+				if M.group('old_str') == '""': pass
+				elif untranslated == 2:
 					ppl += 1
 					xVerb(f"For: {M.group('old')}\nTranslation is: {'pass' if Pass else M.group('new')}")
 				elif not Pass and untranslated == 1:
@@ -484,12 +485,12 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 						else:
 							into = [str(n) for n in frm[2]]
 							S += f"\n\t@ {':'.join(at_pos)}: Leading white-spaces at {':'.join(into)}:"
-						S += f"\n\t\t{frm[3]} differs in the translation: {frm[4]}"
+						S += f"\n\t<\t{frm[3]}\n\t>\t{frm[4]}"
 					else:
 						S += f"\n\t@ {':'.join(at_pos)}: Formating:"
 						if not frm[3] is None:
-							S += f"\n\t\t{frm[2]} differs in the translation: {frm[3]}"
-						else: S += f"\n\t\t{frm[2]} is missing in the translation"
+							S += f"\n\t<\t{frm[2]}\n\t>\t{frm[3]}"
+						else: S += f"\n\t<\t{frm[2]}\n\t-\tmissing in the translation"
 			xVerb(S)
 			fPath = os.path.split(forF)
 			fName = os.path.splitext(fPath[1])[0]+'.check-info'
