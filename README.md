@@ -17,7 +17,8 @@ You would end up with a `SyntaxError`.
 
 #### Possible workflow
 
-* Open Ren'Py, create a new project name like `Translation maker`, click to open the game directory and remove all it's content appart the `tl` directory.
+* Open Ren'Py, create a new project name like `Translation maker`, click to open the game directory and remove all it's content appart the `tl` directory.  
+  Or make this tree yourself in the Ren'Py search path (more efficient).
 * Then open the game directory of the project you want to translate and copy all the `.rpy` files it contain _*(obviously, skip the `tl` directory)*_ into the game folder of `Translation maker`.
     * If all you see is `.rpa` files, so you need to you an [unarchiver](https://github.com/Lattyware/unrpa).  
       _*Open one of the `.rpa` file and check the first line to get the rpa key and use it prefixed by `0x` with the `-k` option.*_  

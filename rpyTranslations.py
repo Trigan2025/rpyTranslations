@@ -54,6 +54,8 @@ rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '['
 rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
 
+reFrm=r'({{(?P<dbF>(\\}}|}?[^}])*)}}|{(?P<bF>(\\}|[^}])*)}|\[(?P<bkF>(\\\]|[^]])*)\])'
+
 reString = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'
 reStringCmt = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+#(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+#(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'# This is mainly to use with the 'diff' command
 reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +([a-zA-Z_]+[a-zA-Z_0-9]*) *:([ \t]+#[^\n]*)?\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
@@ -89,6 +91,15 @@ def cmp(str1, str2):
 			if _1 == _2:
 				score += len(c2)
 				break
+			else:
+				p = 0
+				for _i,_c in enumerate(_2):
+					if _c == _1[p]:
+						count += 1
+						p += 1
+					elif not _1[p] in _2[_i:]:
+						p += 1
+					if p == len(_1): break
 	return score/count
 cmp.__doc__ = _("""This function try to estimate the proxymity between two strings.
 Please note that this can hardly be precise and error-free.
@@ -257,8 +268,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 							if o.group() != n.group():
 								_res.append((o.span(),"Leading white-spaces","end",repr(o.group()),repr(n.group())))
 								D += 1
-							rx=r'({{(\\}}|}?[^}])*}})|({(\\}|[^}])*})|(\[(\\\]|[^]])*\])'
-							RE_x = re.compile(r'\s*{x}\s*'.format(x=rx))
+							RE_x = re.compile(r'\s*{x}\s*'.format(x=reFrm))
 							o,n, n_end = RE_x.search(o_str),RE_x.search(n_str), 0
 							while not o is None:
 								if n is None:
@@ -266,7 +276,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 									D += 1
 								elif o.group() != n.group():
 									n_end = n.end()
-									_o,_n = re.search(rx, o.group()),re.search(rx, n.group())
+									_o,_n = re.search(reFrm, o.group()),re.search(reFrm, n.group())
 									if _o.group() != _n.group():
 										_res.append((o.span(),"Formating",repr(o.group()),repr(n.group())))
 										D += 1
@@ -442,15 +452,14 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 				o,n = re.search(r'\s*$', o_str),re.search(r'\s*$', n_str)
 				if o.group() != n.group():
 					res += [(o.span(),"Leading white-spaces","end",repr(o.group()),repr(n.group()))]
-				rx=r'({{(\\}}|}?[^}])*}})|({(\\}|[^}])*})|(\[(\\\]|[^]])*\])'
-				RE_x = re.compile(r'\s*{x}\s*'.format(x=rx))
+				RE_x = re.compile(r'\s*{x}\s*'.format(x=reFrm))
 				o,n, n_end = RE_x.search(o_str),RE_x.search(n_str), 0
 				while not o is None:
 					if n is None:
 						res += [(o.span(),"Formating",repr(o.group()),None)]
 					elif o.group() != n.group():
 						n_end = n.end()
-						_o,_n = re.search(rx, o.group()),re.search(rx, n.group())
+						_o,_n = re.search(reFrm, o.group()),re.search(reFrm, n.group())
 						if _o.group() != _n.group():
 							res += [(o.span(),"Formating",repr(o.group()),repr(n.group()))]
 						else:
@@ -653,13 +662,23 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 
 		buffer = {}
 		start,end, pos, ppl = -1,-1, 0, 0
+		RE_x = re.compile(reFrm)
 		M, M_dialog = None, RE_dialog.search(file_cache[forF], 0)
 		while not M_dialog is None:
 			M = M_dialog
 			if reverse:
 				tr_id = (M.group('file'),int(M.group('line')),M.start()) if not M.group('file') is None else None
 			else:
-				tr_id = N_str(M.group('old_str')) if proxy else M.group('old_str')
+				if proxy:
+					o_str = M.group('old_str')
+					x = RE_x.search(o_str)
+					while not x is None:
+						if x.group('bkF') is None or not x.group('bkF').isidentifier():
+							o_str = o_str[:x.start()]+o_str[x.end():]
+							x = RE_x.search(o_str, x.start())
+						else: x = RE_x.search(o_str, x.end())
+					tr_id = N_str(o_str)
+				else: tr_id = M.group('old_str')
 			if not tr_id is None:
 				if start == -1: start = M.start()
 				pos, end = M.start(), M.end()
@@ -674,7 +693,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 			M_dialog = RE_dialog.search(file_cache[forF], pos)
 
 		if reverse:
-			xpos = start if start != -1 else None
+			xpos = start
 			for tr_key in sorted(buffer.keys()):
 				file_cache[forF] = file_cache[forF][:xpos]+buffer[tr_key][0]+file_cache[forF][xpos:]
 				xpos += len(buffer[tr_key][0])
@@ -729,6 +748,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_x = re.compile(reFrm)
 	glob_ppl = 0
 	file_cache = {}
 	def _search(what, fromF):
@@ -744,7 +764,14 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 				M = M_string if M_dialog is None else M_dialog
 			Pass = not RE_pass.match(M.group('new')) is None
 			if not Pass and M.group('new_str') != '""':
-				c = cmp(w, eval(M.group('old_str')))# since we now this is string, np
+				o_str = eval(M.group('old_str'))# since we now this is string, np
+				x = RE_x.search(o_str)
+				while not x is None:
+					if x.group('bkF') is None or not x.group('bkF').isidentifier():
+						o_str = o_str[:x.start()]+o_str[x.end():]
+						x = RE_x.search(o_str, x.start())
+					else: x = RE_x.search(o_str, x.end())
+				c = cmp(w, o_str)
 				if c >= .90: corresp[(c, M.start())] = M
 			pos = M.end()
 			M_string,M_dialog = RE_string.search(file_cache[fromF],pos), RE_dialog.search(file_cache[fromF],pos)
