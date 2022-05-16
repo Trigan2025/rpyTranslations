@@ -130,10 +130,10 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 			if not fromF in file_cache.keys():
 				F = ""
 				with open(fromF, 'r', newline='') as f:
-					L, file_cache[forF+':L'] = 0, []
+					L, file_cache[fromF+':L'] = 0, []
 					for line in f:
 						L += len(line)
-						file_cache[forF+':L'].append(len(line))
+						file_cache[fromF+':L'].append(len(line))
 						F += line
 					Debug('Debug: total size:',L,'; lines:',len(file_cache[forF+':L']))
 				file_cache[fromF] = F
@@ -332,7 +332,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 						S += f" ADDED but {k[2]}"
 			if len(frmF[fromF][0]) > 0:
 				for k in frmF[fromF][0]:
-					at = [str(Line(file_cache[forF+':L'], n)) for n in k[:2]]
+					at = [str(Line(file_cache[fromF+':L'], n)) for n in k[:2]]
 					if isinstance(k[2], str):
 						S += f"\n-@Lines {':'.join(at)}: REMOVED"
 					else:
@@ -657,7 +657,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 		while not M_dialog is None:
 			M = M_dialog
 			if reverse:
-				tr_id = (M.group('file'),int(M.group('line')),M.start())) if not M.group('file') is None else None
+				tr_id = (M.group('file'),int(M.group('line')),M.start()) if not M.group('file') is None else None
 			else:
 				tr_id = N_str(M.group('old_str')) if proxy else M.group('old_str')
 			if not tr_id is None:
@@ -665,7 +665,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 				pos, end = M.start(), M.end()
 				if not tr_id in buffer.keys():
 					buffer[tr_id] = []
-					pos = end
+					if not reverse: pos = end
 				else:
 					file_cache[forF] = file_cache[forF][:M.start()]+file_cache[forF][end:]
 				if reverse: file_cache[forF] = file_cache[forF][:M.start()]+file_cache[forF][end:]
@@ -674,9 +674,9 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 			M_dialog = RE_dialog.search(file_cache[forF], pos)
 
 		if reverse:
-			xpos = start
+			xpos = start if start != -1 else None
 			for tr_key in sorted(buffer.keys()):
-				file_cache[forF] = file_cache[forF][:xpos]+buffer[tr_key][0][xpos:]
+				file_cache[forF] = file_cache[forF][:xpos]+buffer[tr_key][0]+file_cache[forF][xpos:]
 				xpos += len(buffer[tr_key][0])
 		else:
 			for tr_key in sorted(buffer.keys()):
