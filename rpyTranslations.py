@@ -1279,7 +1279,7 @@ if __name__ == '__main__':
 	#print("Debug: STOP")
 	#exit()
 	try:
-		if Cmd == 'popuplate':
+		if Cmd == 'populate':
 			populate(*args, **kargs)
 		elif Cmd == 'fix-empty':
 			fixEmpty(*args, **kargs)
