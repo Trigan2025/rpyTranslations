@@ -49,7 +49,7 @@ reTDQ = r'"""(\\"|""?[^"]|[^"])*"""'
 reTSQ = r"'''(\\'|''?[^']|[^'])*'''"
 reQ = r'('+reTDQ+r'|'+reTSQ+r'|'+reDQ+r'|'+reSQ+r')'
 reP = r'(?P<p>_p\()?{Q}(?(p)\))'.format(Q=reQ)
-reN = r'({SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
+reN = r'(?P<NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
 rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '[' and reQ
 rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
@@ -408,11 +408,11 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
 	if not untranslated in (0,1,2):
-		Throw(ValueError,_("Invalide argument:"),_("untranslated parameter should be 1 for empty, 2 for pass, or 0 to deactivate"), code=2)
+		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be 1 for empty, 2 for pass, or 0 to deactivate").format('untranslated'), code=2)
 	if not isinstance(formats, bool):
-		Throw(TypeError,_("Invalide argument:"),_("formats parameter should be of booleen type"), code=2)
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('formats'), code=2)
 	if not formats and untranslated == 0:
-		Throw(Exception,_("Invalide parameters:"),_("formats parameter need to be set to True or untranslated parameter need to be greater than 0 to indicate which checking to make"), code=3)
+		Throw(Exception,_("Invalide parameters:"),_("{} parameter need to be set to True or {} parameter need to be greater than 0 to indicate which checking to make").format('formats','untranslated'), code=3)
 	for i,forF in enumerate(forFiles):
 		if not os.path.isfile(forF):
 			Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
@@ -536,7 +536,7 @@ def fixEmpty(forFiles, /, action='P', *, outdir=None, verbose=0, debug=False):
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
 	if not action in ('P','C','R'):
-		Throw(ValueError,_("Invalide argument:"),_("action parameter should be P, C, or R"), code=2)
+		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be ").format('action'),'P, C, or R', code=2)
 	popFiles = []
 	for forF in forFiles:
 		if not os.path.isfile(forF):
@@ -637,9 +637,9 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
 	if not isinstance(reverse, bool):
-		Throw(TypeError,_("Invalide argument:"),_("reverse parameter should be of booleen type"), code=2)
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('reverse'), code=2)
 	if not isinstance(proxy, bool):
-		Throw(TypeError,_("Invalide argument:"),_("proxy parameter should be of booleen type"), code=2)
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('proxy'), code=2)
 	popFiles = []
 	for forF in forFiles:
 		if not os.path.isfile(forF):
@@ -735,10 +735,10 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 	Verb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=1 else None
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
-	if not proxy in (0,1,2,3):
-		Throw(ValueError,_("Invalide argument:"),_("proxy should be an integer between 0 and 3 (includes)"), code=2)
+	if not proxy in (0,1,2,3,4):
+		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be an integer between 0 and 4 (includes)").format('proxy'), code=2)
 	if not overwrite in ('N','A','F'):
-		Throw(ValueError,_("Invalide argument:"),_("overwrite parameter should be N for no, A for ask, or F for force"), code=2)
+		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be N for no, A for ask, or F for force").format('override'), code=2)
 	popFiles = []
 	for fromFiles in FromFiles:
 		if len(forFiles) != len(fromFiles):
@@ -838,7 +838,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 						RE_from = _RE_string
 					m_from = RE_from.search(file_cache[fromF])
 					if T == 1:
-						TID = _RE_dialog.group('TID')
+						TID = M.group('TID')
 						while not m_from is None and m_from.group('TID') != TID:# get the eventual latest
 							if not Pass: M_from = m_from
 							m_from = RE_from.search(file_cache[fromF], m_from.end())
@@ -850,24 +850,38 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 					if M_from is None:
 						if proxy > 0:
 							by_proxy = True
-							_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reN, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
-							_RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{old})'.format(old=re.escape(M.group('old_str'))), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-							if proxy >= 1:
+							if T == 1:
+								reNID = r'(?P<NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('NID'))
+								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reNID, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reNID, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+								TID = M.group('TID')
+								m_from = _RE_dialog.search(file_cache[fromF])
+								while not m_from is None and m_from.group('TID') != TID:# get the eventual latest
+									if not Pass: M_from = m_from
+									m_from = RE_from.search(file_cache[fromF], m_from.end())
+									if not m_from is None and m_from.group('TID') == TID: M_from = m_from
+							if M_from is None and proxy > 1:
+								_RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{old})'.format(old=re.escape(M.group('old_str'))), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
+								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reN, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 								if T == 1:
-									m_from = _RE_string.search(file_cache[fromF])
-									while not m_from is None:# get the eventual latest
-										if not Pass: M_from = m_from
-										m_from = _RE_string.search(file_cache[fromF], m_from.end())
-							if M_from is None and proxy >= 2:
-								if T == 0:
 									m_from = _RE_dialog.search(file_cache[fromF])
 									while not m_from is None:# get the eventual latest
 										if not Pass: M_from = m_from
 										m_from = _RE_dialog.search(file_cache[fromF], m_from.end())
-								else:
-									pass# same as for proxy 1
-							if M_from is None and proxy >= 3:
-								M_from = _search(M.group('old_str'), fromF)
+									if m_from is None:
+										m_from = _RE_string.search(file_cache[fromF])
+										while not m_from is None:# get the eventual latest
+											if not Pass: M_from = m_from
+											m_from = _RE_string.search(file_cache[fromF], m_from.end())
+								if M_from is None and proxy >= 3:
+									if T == 0:
+										m_from = _RE_dialog.search(file_cache[fromF])
+										while not m_from is None:# get the eventual latest
+											if not Pass: M_from = m_from
+											m_from = _RE_dialog.search(file_cache[fromF], m_from.end())
+									else:
+										pass# same as for proxy 2
+								if M_from is None and proxy >= 4:
+									M_from = _search(M.group('old_str'), fromF)
 						if M_from is None: Debug('Debug:from_match span (-1, -1) is:\n""')
 					else: Debug(f'Debug:from_match span {M_from.span()} is:\n{M_from.group()!r}')
 					if not M_from is None and M_from.group('new_str') == '""': M_from = None
@@ -909,7 +923,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 populate.__doc__ = _("""\
 forFiles: List - The list of files that need to be populated.
 FromFiles: List,... - Successions of list of files from where to get the translations.
-proxy: Integer - From 0 to 3 (includes) to indicate a level of proxy, 0 to diactivate, 3 made it long.
+proxy: Integer - From 0 to 4 (includes) to indicate a level of proxy, 0 to diactivate, 4 made it long.
 overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force.
 outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None
         to save inplace.
@@ -981,11 +995,12 @@ if __name__ == '__main__':
 		       based on the proxymity level (lvl).
 		      lvl can be one of the following:
 		          0   Default. No proxy maked.
-		          1   For 'dialogs', allow to search in 'strings' translations, but not allow for 'strings'
-		               to search in 'dialogs' translations.
-		          2   Allow to focus only on the strings. With that, 'dialogs' can now be considered as same
+		          1   For 'dialogs', allow to focus only in the name part of the dialog identifier.
+		          2   For 'dialogs', allow to fully ignore the dialog identifier and as fallback to search in
+		               'strings' translations, but not allow for 'strings' to search in 'dialogs' translations.
+		          3   Allow to focus only on the strings. With that, 'dialogs' can now be considered as same
 		               as 'strings', so 'strings' can now search in 'dialogs' translations.
-		          3   The strings are compared to get a least a correspondance of 90%.
+		          4   The strings are compared to get a least a correspondance of 90%.
 		              Please note that this can be a very long process.
 		  -v [lvl], --verbose [lvl]
 		      Activate the verbosity during the process.
@@ -1176,22 +1191,22 @@ if __name__ == '__main__':
 		if '-%' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: -% option should be an integer, give"),N)
+			except: Error(("Invalide argument: {} option should be an integer, give").format('-%'),N)
 			sys.argv.remove('-%')
 		elif '--multi' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--multi')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: --multi option should be an integer, give"),N)
+			except: Error(("Invalide argument: {} option should be an integer, give").format('--multi'),N)
 			sys.argv.remove('--multi')
 		elif '--lists' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--lists')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: --lists option should be an integer, give"),N)
+			except: Error(("Invalide argument: {} option should be an integer, give").format('--lists'),N)
 			sys.argv.remove('--lists')
 		if '--proxy' in sys.argv:
 			proxy = sys.argv.pop(sys.argv.index('--proxy')+1)
 			try: proxy = int(proxy)
-			except: Error(("Invalide argument: --proxy option should be an integer, give"),proxy)
+			except: Error(("Invalide argument: {} option should be an integer, give").format('--proxy'),proxy)
 			sys.argv.remove('--proxy')
 		else: proxy = 0
 		argc = len(sys.argv)-1
@@ -1256,17 +1271,17 @@ if __name__ == '__main__':
 		if '-%' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("-% option should be an integer, give"),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
 			sys.argv.remove('-%')
 		elif '--multi' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--multi')+1)
 			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("--multi option should be an integer, give"),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--multi'),N)
 			sys.argv.remove('--multi')
 		elif '--lists' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--lists')+1)
 			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("--lists option should be an integer, give"),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format(''),N)
 			sys.argv.remove('--lists')
 		elif '--ignore-newpart' in sys.argv:
 			nP = False

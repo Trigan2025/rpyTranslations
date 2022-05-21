@@ -9,8 +9,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2022-05-21 05:18+0200\n"
-"PO-Revision-Date: 2022-05-21 05:36+0200\n"
+"POT-Creation-Date: 2022-05-21 15:36+0200\n"
+"PO-Revision-Date: 2022-05-21 16:16+0200\n"
 "Last-Translator: TRIGAN <trigan2025@outlook.com>\n"
 "Language-Team: none\n"
 "Language: fr\n"
@@ -59,28 +59,28 @@ msgstr ""
 
 #: rpyTranslations.py:411 rpyTranslations.py:413 rpyTranslations.py:539
 #: rpyTranslations.py:640 rpyTranslations.py:642 rpyTranslations.py:739
-#: rpyTranslations.py:741 rpyTranslations.py:925 rpyTranslations.py:952
-#: rpyTranslations.py:998 rpyTranslations.py:1028 rpyTranslations.py:1059
-#: rpyTranslations.py:1092 rpyTranslations.py:1129 rpyTranslations.py:1259
-#: rpyTranslations.py:1264 rpyTranslations.py:1269
+#: rpyTranslations.py:741 rpyTranslations.py:939 rpyTranslations.py:966
+#: rpyTranslations.py:1013 rpyTranslations.py:1043 rpyTranslations.py:1074
+#: rpyTranslations.py:1107 rpyTranslations.py:1144 rpyTranslations.py:1274
+#: rpyTranslations.py:1279 rpyTranslations.py:1284
 msgid "Invalide argument:"
 msgstr "Argument invalide :"
 
 #: rpyTranslations.py:411
-msgid "untranslated parameter should be 1 for empty, 2 for pass, or 0 to deactivate"
-msgstr "le paramètre untranslated doit être 1 pour vide, 2 pour pass, ou 0 pour désactiver"
+msgid "{} parameter should be 1 for empty, 2 for pass, or 0 to deactivate"
+msgstr "le paramètre {} doit être 1 pour vide, 2 pour pass, ou 0 pour désactiver"
 
-#: rpyTranslations.py:413
-msgid "formats parameter should be of booleen type"
-msgstr "le paramètre formats doit être de type booléen"
+#: rpyTranslations.py:413 rpyTranslations.py:640 rpyTranslations.py:642
+msgid "{} parameter should be of booleen type"
+msgstr "le paramètre {} doit être de type booléen"
 
 #: rpyTranslations.py:415
 msgid "Invalide parameters:"
 msgstr "Paramètres invalides :"
 
 #: rpyTranslations.py:415
-msgid "formats parameter need to be set to True or untranslated parameter need to be greater than 0 to indicate which checking to make"
-msgstr "Le paramètre formats doit être défini sur True ou le paramètre untranslated doit être supérieur à 0 pour indiquer la vérification à effectuer"
+msgid "{} parameter need to be set to True or {} parameter need to be greater than 0 to indicate which checking to make"
+msgstr "Le paramètre {} doit être défini sur True ou le paramètre {} doit être supérieur à 0 pour indiquer la vérification à effectuer"
 
 #: rpyTranslations.py:419 rpyTranslations.py:549 rpyTranslations.py:552
 #: rpyTranslations.py:652 rpyTranslations.py:655
@@ -106,8 +106,8 @@ msgstr ""
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
 #: rpyTranslations.py:539
-msgid "action parameter should be P, C, or R"
-msgstr "le paramètre action doit être P, C ou R"
+msgid "{} parameter should be "
+msgstr "le paramètre {} doit être "
 
 #: rpyTranslations.py:625
 # wide 110
@@ -128,14 +128,6 @@ msgstr ""
 "        pour enregistrer sur-place.\n"
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
-
-#: rpyTranslations.py:640
-msgid "reverse parameter should be of booleen type"
-msgstr "le paramètre reverse doit être de type booléen"
-
-#: rpyTranslations.py:642
-msgid "proxy parameter should be of booleen type"
-msgstr "le paramètre proxy doit être de type booléen"
 
 #: rpyTranslations.py:723
 # wide 110
@@ -160,14 +152,14 @@ msgstr ""
 "debug: Booléen - Active ou non le débogage.\n"
 
 #: rpyTranslations.py:739
-msgid "proxy should be an integer between 0 and 3 (includes)"
-msgstr "proxy doit être un nombre entier compris entre 0 et 3 (inclus)"
+msgid "{} parameter should be an integer between 0 and 4 (includes)"
+msgstr "le paramètre {} doit être un nombre entier compris entre 0 et 3 (inclus)"
 
 #: rpyTranslations.py:741
-msgid "overwrite parameter should be N for no, A for ask, or F for force"
-msgstr "le paramètre overwrite doit être N pour non, A pour demander ou F pour force"
+msgid "{} parameter should be N for no, A for ask, or F for force"
+msgstr "le paramètre {} doit être N pour non, A pour demander ou F pour force"
 
-#: rpyTranslations.py:877
+#: rpyTranslations.py:891
 #, python-brace-format
 msgid ""
 "For: {old}\n"
@@ -178,24 +170,24 @@ msgstr ""
 "Tente de remplacer: {new}\n"
 "À partir de: {From}"
 
-#: rpyTranslations.py:878
+#: rpyTranslations.py:892
 msgid "Warning:"
 msgstr "Avertissement :"
 
-#: rpyTranslations.py:878
+#: rpyTranslations.py:892
 msgid "Please note that the 'From' was found by proxy."
 msgstr "Veuillez noter que le 'À partir de' a été trouvé par proxy."
 
-#: rpyTranslations.py:880
+#: rpyTranslations.py:894
 msgid "Proceed?"
 msgstr "Procéder ?"
 
-#: rpyTranslations.py:909
+#: rpyTranslations.py:923
 # wide 110
 msgid ""
 "forFiles: List - The list of files that need to be populated.\n"
 "FromFiles: List,... - Successions of list of files from where to get the translations.\n"
-"proxy: Integer - From 0 to 3 (includes) to indicate a level of proxy, 0 to diactivate, 3 made it long.\n"
+"proxy: Integer - From 0 to 4 (includes) to indicate a level of proxy, 0 to diactivate, 4 made it long.\n"
 "overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force.\n"
 "outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None\n"
 "        to save inplace.\n"
@@ -204,7 +196,7 @@ msgid ""
 msgstr ""
 "forFiles: Liste - Liste des fichiers qui doivent être peuplés.\n"
 "FromFiles: Liste,... - Successions de liste de fichiers d’où sont obtenu les traductions.\n"
-"proxy: Entier - De 0 à 3 (inclus) pour indiquer un niveau de proxy, 0 pour le désactiver, 3 pour rendre la\n"
+"proxy: Entier - De 0 à 4 (inclus) pour indiquer un niveau de proxy, 0 pour le désactiver, 4 pour rendre la\n"
 "       tâche longue.\n"
 "overwrite: Caractère - Devrait être : 'N' pour non, 'A' pour demande, ou 'F' pour force.\n"
 "outdir: Chaîne - Un chemin relatif aux chemins 'forFiles' pour indiquer où enregistrer le résultat ou None\n"
@@ -212,11 +204,11 @@ msgstr ""
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
-#: rpyTranslations.py:925
+#: rpyTranslations.py:939
 msgid "the 1st argument need to one of the following:"
 msgstr "le 1er argument doit correspondre à l’un des arguments suivants :"
 
-#: rpyTranslations.py:925
+#: rpyTranslations.py:939
 msgid ""
 "\n"
 "  not"
@@ -224,7 +216,7 @@ msgstr ""
 "\n"
 "  pas"
 
-#: rpyTranslations.py:927
+#: rpyTranslations.py:941
 #, python-brace-format
 # wide 110 (tabulations "\t" do not count)
 msgid ""
@@ -278,12 +270,12 @@ msgstr ""
 "\t\t  Consultez l’aide spécifique des commandes pour voir les autres options disponibles.\n"
 "\t\t"
 
-#: rpyTranslations.py:952 rpyTranslations.py:998 rpyTranslations.py:1028
-#: rpyTranslations.py:1059 rpyTranslations.py:1092 rpyTranslations.py:1129
+#: rpyTranslations.py:966 rpyTranslations.py:1013 rpyTranslations.py:1043
+#: rpyTranslations.py:1074 rpyTranslations.py:1107 rpyTranslations.py:1144
 msgid "help commands do not accept any argument or option."
 msgstr "les commandes help n’acceptent aucun argument ou option."
 
-#: rpyTranslations.py:955
+#: rpyTranslations.py:969
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations populate [--help] for_files... from_files... [options]\n"
@@ -314,11 +306,12 @@ msgid ""
 "\t\t       based on the proxymity level (lvl).\n"
 "\t\t      lvl can be one of the following:\n"
 "\t\t          0   Default. No proxy maked.\n"
-"\t\t          1   For 'dialogs', allow to search in 'strings' translations, but not allow for 'strings'\n"
-"\t\t               to search in 'dialogs' translations.\n"
-"\t\t          2   Allow to focus only on the strings. With that, 'dialogs' can now be considered as same\n"
+"\t\t          1   For 'dialogs', allow to focus only in the name part of the dialog identifier.\n"
+"\t\t          2   For 'dialogs', allow to fully ignore the dialog identifier and as fallback to search in\n"
+"\t\t               'strings' translations, but not allow for 'strings' to search in 'dialogs' translations.\n"
+"\t\t          3   Allow to focus only on the strings. With that, 'dialogs' can now be considered as same\n"
 "\t\t               as 'strings', so 'strings' can now search in 'dialogs' translations.\n"
-"\t\t          3   The strings are compared to get a least a correspondance of 90%.\n"
+"\t\t          4   The strings are compared to get a least a correspondance of 90%.\n"
 "\t\t              Please note that this can be a very long process.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Activate the verbosity during the process.\n"
@@ -357,12 +350,15 @@ msgstr ""
 "\t\t       d’autres méthodes basées sur le niveau de proximité (lvl).\n"
 "\t\t      lvl peut être un des suivants :\n"
 "\t\t          0   Par défaut. Aucun proxy de fait.\n"
-"\t\t          1   Pour 'dialogs', autorise la recherche dans les traductions 'strings', mais pas pour 'strings'\n"
-"\t\t               dans les traductions 'dialogs'.\n"
-"\t\t          2   Permet de se concentrer uniquement sur les chaînes. Avec cela, 'dialogs' peut maintenant être\n"
+"\t\t          1   Pour 'dialogs', autorise à se concentrer uniquement sur la partie nom de l’identificateur de\n"
+"\t\t               dialogue.\n"
+"\t\t          2   Pour 'dialogs', permet d’ignorer complètement l’identifiant de dialogue et en dernier recours\n"
+"\t\t               autorise la recherche dans les traductions 'strings', mais pas pour 'strings' dans les\n"
+"\t\t               traductions 'dialogs'.\n"
+"\t\t          3   Permet de se concentrer uniquement sur les chaînes. Avec cela, 'dialogs' peut maintenant être\n"
 "\t\t               considéré comme identique à 'strings', de sorte que 'strings' peut maintenant rechercher\n"
 "\t\t               dans les traductions 'dialogs'.\n"
-"\t\t          3   Les chaînes sont comparées pour obtenir au moins une correspondance de 90%.\n"
+"\t\t          4   Les chaînes sont comparées pour obtenir au moins une correspondance de 90%.\n"
 "\t\t              Veuillez noter que ce processus peut être très long.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Active la verbosité durant le processus.\n"
@@ -373,7 +369,7 @@ msgstr ""
 "\t\t* Notez que --ask a priorité sur --force.\n"
 "\t\t"
 
-#: rpyTranslations.py:1001
+#: rpyTranslations.py:1016
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations fix-empty [--help] for_files... [options]\n"
@@ -429,7 +425,7 @@ msgstr ""
 "\t\t      Active les impressions de débogage durant le processus. Veuillez noter que la sortie peut être énorme.\n"
 "\t\t"
 
-#: rpyTranslations.py:1031
+#: rpyTranslations.py:1046
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations check [--help] for_files... [options]\n"
@@ -487,7 +483,7 @@ msgstr ""
 "\t\t* Veuillez noter que --skip-empty a priorité sur --not-translate qui a priorité sur --empty.\n"
 "\t\t"
 
-#: rpyTranslations.py:1062
+#: rpyTranslations.py:1077
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations diff [--help] for_files... [options]\n"
@@ -550,7 +546,7 @@ msgstr ""
 "\t\t      Active les impressions de débogage durant le processus. Veuillez noter que la sortie peut être énorme.\n"
 "\t\t"
 
-#: rpyTranslations.py:1095
+#: rpyTranslations.py:1110
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations reorder [--help] for_files... [options]\n"
@@ -621,26 +617,18 @@ msgstr ""
 "\t\t      Active les impressions de débogage durant le processus.\n"
 "\t\t"
 
-#: rpyTranslations.py:1199 rpyTranslations.py:1282
+#: rpyTranslations.py:1214 rpyTranslations.py:1297
 #, python-brace-format
 msgid "The file pair lists need to have equal length, {N} gived."
 msgid_plural "The file pair lists need to have equal length, {N} gived."
 msgstr[0] "Les listes de paires de fichiers doivent avoir une longueur égale, {N} donnée."
 msgstr[1] "Les listes de paires de fichiers doivent avoir une longueur égale, {N} données."
 
-#: rpyTranslations.py:1259
-#, python-format
-msgid "-% option should be an integer, give"
-msgstr "l’option -% doit être un entier, donné"
+#: rpyTranslations.py:1274 rpyTranslations.py:1279 rpyTranslations.py:1284
+#, python-brace-format
+msgid "{} option should be an integer, give"
+msgstr "l’option {} doit être un entier, donné"
 
-#: rpyTranslations.py:1264
-msgid "--multi option should be an integer, give"
-msgstr "l’option --multi doit être un entier, donné"
-
-#: rpyTranslations.py:1269
-msgid "--lists option should be an integer, give"
-msgstr "l’option --list doit être un entier, donné"
-
-#: rpyTranslations.py:1328
+#: rpyTranslations.py:1343
 msgid "An error occured:\n"
 msgstr "Une erreur s'est produite :\n"
