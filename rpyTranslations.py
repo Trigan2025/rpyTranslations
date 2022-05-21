@@ -58,7 +58,7 @@ reFrm=r'({{(?P<dbF>(\\}}|}?[^}])*)}}|{(?P<bF>(\\}|[^}])*)}|\[(?P<bkF>(\\\]|[^]])
 
 reString = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'
 reStringCmt = r'^([ \t]+##[^\n]*\r?\n)*([ \t]+{rID}\r?\n)?([ \t]+#(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*)?)*)[ \t]+#(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n[ \t]+##?[^\n]*)*\r?\n(\r?\n)?'# This is mainly to use with the 'diff' command
-reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +([a-zA-Z_]+[a-zA-Z_0-9]*) *:([ \t]+#[^\n]*)?\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
+reDialog = r'^(##[^\n]*\r?\n)*({rID}\r?\n)?(translate +[a-z]+ +(?P<TID>[a-zA-Z_]+[a-zA-Z_0-9]*) *:([ \t]+#[^\n]*)?\r?\n((\s*##[^\n]*)*\s*)*[ \t]+(?P<old>{old})([ \t]+#[^\n]*)?(\r?\n([ \t]+##[^\n]*|[ \t]+{py})*|[ \t]*)*)[ \t]+(?P<new>{new})([ \t]+#[^\n]*)?(\r?\n([ \t]+##?[^\n]*|[ \t]*))*\r?\n(\r?\n)?'
 # The final `(\r?\n)?` is to ease and enance the work of 'fixEmpty' and 'reorder' functions.
 
 RE_S = re.compile(r'\s+')# for splittings
@@ -105,7 +105,7 @@ cmp.__doc__ = _("""This function try to estimate the proxymity between two strin
 Please note that this can hardly be precise and error-free.
 """)
 
-def diff(forFiles, *FromFiles, verbose=0, debug=False):
+def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose=0, debug=False):
 	Verb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=1 else None
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
@@ -180,7 +180,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 			Verb('fromFile:',repr(fromF))
 			_for_spans, _from_spans, res = [], [], ([],[])
 			# checking for removed ones and the general differences
-			pos = 0
+			pos, TID = 0, None
 			M, M_from, T, M_string, M_stringCmt, M_dialog = None, None, 0, RE_string.search(file_cache[fromF], pos), RE_stringCmt.search(file_cache[fromF], pos), RE_dialog.search(file_cache[fromF], pos)
 			while not (M_string is None and M_stringCmt is None and M_dialog is None):
 				M, T = get_M(M_string, M_dialog, M_stringCmt)
@@ -190,10 +190,12 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 				if T == 1:
 					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 					M_from = m_from = _RE_dialog.search(file_cache[forF])
-					T_from = 1
-					while not m_from is None and m_from.span() in _for_spans:
+					T_from, TID = 1, M.group('TID')
+					while not m_from is None and (m_from.group('TID') != TID or m_from.span() in _for_spans):
 						m_from = _RE_dialog.search(file_cache[forF], m_from.end())
-						if not (m_from is None or m_from.span() in _for_spans):
+						if not m_from is None and m_from.group('TID') == TID:
+							M_from = m_from
+						elif not (m_from is None or m_from.span() in _for_spans):
 							M_from = m_from
 				else:
 					_RE_string = re.compile(reString.format(old=re.escape(M.group('old')), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
@@ -217,7 +219,7 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 				else:
 					_for_spans.append(M_from.span())
 					_res = []
-					if not M.group('file') is None:
+					if reflines and not M.group('file') is None:
 						if M_from.group('file') is None:
 							rf = ':'.join((M.group('file'),M.group('line')))
 							xVerb("The reference-line is removed:",rf)
@@ -232,19 +234,23 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 							to_rf = ':'.join((M_from.group('file'),M_from.group('line')))
 							xVerb("The line in the reference-line as changed from:",rf,"to:",to_rf)
 							_res.append(("reference-line","line",rf,to_rf))
-					if T == 2:
+					if T == 1 and trID and TID != M_from.group('TID'):
+						tid = M_from.group('TID')
+						xVerb("The file of the transition-identifier as changed from:",TID,"to:",tid)
+						_res.append(("transition-id",TID,tid))
+					if newpart and T == 2:
 						if T_from == 0:
 							xVerb("As been uncommented:",repr(M.group('old')))
 							_res.append(("commented",False))
-					elif T == 0:
+					elif newpart and T == 0:
 						if T_from == 2:
 							xVerb("As been commented:",repr(M.group('old')))
 							_res.append(("commented",True))
-					if Pass:
+					if newpart and Pass:
 						if RE_pass.match(M_from.group('new')) is None:
 							xVerb("As been unset from pass:",repr(M.group('old')))
 							_res.append(("pass",False))
-					elif M.group('new') != M_from.group('new'):
+					elif newpart and M.group('new') != M_from.group('new'):
 						D = 0
 						if not RE_pass.match(M_from.group('new')) is None:
 							xVerb("As been set to pass:",repr(M.group('old')))
@@ -355,6 +361,8 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 									S += f" Reference-line line changed\n<\t{frm[2]}\n>\t{frm[3]}"
 								else:# frm[1] == "removed":
 									S += f" Reference-line removed ({frm[2]})"
+							elif frm[0] == "transition-id":
+								S += f" Transition-identifier changed\n<\t{frm[1]}\n>\t{frm[2]}"
 							elif frm[0] == "commented":
 								if frm[1]: S += " COMMENTED"
 								else: S += " UNCOMMENTED"
@@ -388,6 +396,9 @@ def diff(forFiles, *FromFiles, verbose=0, debug=False):
 diff.__doc__ = _("""\
 forFiles: List - The list of files where differences of translation need to be compared.
 FromFiles: List,... - Successions of list of files from where to get other translations.
+newpart: Booleen - Output or not comparisons of new-part of translations.
+reflines: Booleen - Output or not comparisons of reference-lines.
+trID: Booleen - Output or not comparisons of translation-identifiers.
 verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging. The amount in this function can be huge.
 """)
@@ -485,7 +496,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 				S += "\nNot translated: "+str(file_cache[forF+':E'])
 			for k in keys:
 				at = [str(Line(file_cache[forF+':L'], n)) for n in k]
-				S += f"\n@Lines {':'.join(at)}:"
+				S += f"\n!@Lines {':'.join(at)}:"
 				for frm in frmF[k]:
 					at_pos = [str(n) for n in frm[0]]
 					if frm[1] == "Leading white-spaces":
@@ -826,9 +837,16 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 					else:
 						RE_from = _RE_string
 					m_from = RE_from.search(file_cache[fromF])
-					while not m_from is None:# get the eventual latest
-						if not Pass: M_from = m_from
-						m_from = RE_from.search(file_cache[fromF], m_from.end())
+					if T == 1:
+						TID = _RE_dialog.group('TID')
+						while not m_from is None and m_from.group('TID') != TID:# get the eventual latest
+							if not Pass: M_from = m_from
+							m_from = RE_from.search(file_cache[fromF], m_from.end())
+							if not m_from is None and m_from.group('TID') == TID: M_from = m_from
+					else:
+						while not m_from is None:# get the eventual latest
+							if not Pass: M_from = m_from
+							m_from = RE_from.search(file_cache[fromF], m_from.end())
 					if M_from is None:
 						if proxy > 0:
 							by_proxy = True
@@ -1054,6 +1072,12 @@ if __name__ == '__main__':
 		options:
 		  -h, --help
 		      Show this specific help for the 'diff' command and exit.
+		  --ignore-newpart
+		      Indicate if the comparisons of new-part of translations should be output or not.
+		  --reflines
+		      Indicate if the comparisons of reference-lines should be output or not.
+		  --tr-id
+		      Indicate if the comparisons of translation-identifiers should be output or not.
 		  -% n, --multi n, --lists n
 		      This allow to give the number of list from where other translations are get. This include the
 		       first group of files (the for_files).
@@ -1063,7 +1087,6 @@ if __name__ == '__main__':
 		      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.
 		  -d, --debug
 		      Activate the debug printings during the process. The output can be huge.
-		* Please note that --skip-empty take precedence over --not-translate that take precedence over --empty.
 		""")))
 		if len(sys.argv) != 2:
 			Error(_("Invalide argument:"),_("help commands do not accept any argument or option."))
@@ -1229,7 +1252,7 @@ if __name__ == '__main__':
 		if dbg: print(f"Debug: check({files}, untranslated={UnT}, formats={F!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'untranslated':UnT,'formats':F,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'diff':
-		N = 2
+		N, nP, refL, trID = 2, True, False, False
 		if '-%' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
@@ -1245,6 +1268,15 @@ if __name__ == '__main__':
 			try: N = int(N)
 			except: Error(_("Invalide argument:"),_("--lists option should be an integer, give"),N)
 			sys.argv.remove('--lists')
+		elif '--ignore-newpart' in sys.argv:
+			nP = False
+			sys.argv.remove('--ignore-newpart')
+		elif '--reflines' in sys.argv:
+			refL = True
+			sys.argv.remove('--reflines')
+		elif '--tr-ids' in sys.argv:
+			trID = True
+			sys.argv.remove('--tr-ids')
 		argc = len(sys.argv)-1
 		if argc%N != 0:
 			Error(_("The file pair lists need to have equal length, {N} gived.", argc).format(N=argc))
@@ -1254,8 +1286,8 @@ if __name__ == '__main__':
 		for i,f in enumerate(sys.argv[1+N:]):
 			if i%N == 0: files2.append([f])
 			else: files2[-1].append(f)
-		if dbg: print(f"Debug: diff({files1}, {files2}, verbose={verbose}, debug={dbg})")
-		args,kargs = [files1,*files2], {'verbose':verbose,'debug':dbg}
+		if dbg: print(f"Debug: diff({files1}, {files2}, newpart={nP}, reflines={refL}, trID={trID}, verbose={verbose}, debug={dbg})")
+		args,kargs = [files1,*files2], {'newpart':nP,'reflines':refL,'trID':trID,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'reorder':
 		D, R, P = None, False, False
 		if '-o' in sys.argv:

@@ -9,73 +9,76 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2022-05-10 20:55+0200\n"
+"POT-Creation-Date: 2022-05-21 05:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
 
-#: rpyTranslations.py:93
+#: rpyTranslations.py:104
 msgid ""
 "This function try to estimate the proxymity between two strings.\n"
 "Please note that this can hardly be precise and error-free.\n"
 msgstr ""
 
-#: rpyTranslations.py:103 rpyTranslations.py:713
+#: rpyTranslations.py:114 rpyTranslations.py:745
 msgid "The length of both list of files need to be equal"
 msgstr ""
 
-#: rpyTranslations.py:106 rpyTranslations.py:108 rpyTranslations.py:397
-#: rpyTranslations.py:522 rpyTranslations.py:625 rpyTranslations.py:716
-#: rpyTranslations.py:718
+#: rpyTranslations.py:117 rpyTranslations.py:119 rpyTranslations.py:418
+#: rpyTranslations.py:543 rpyTranslations.py:646 rpyTranslations.py:748
+#: rpyTranslations.py:750
 msgid "doen't exist or is not a file"
 msgstr ""
 
-#: rpyTranslations.py:110 rpyTranslations.py:720
+#: rpyTranslations.py:121 rpyTranslations.py:752
 msgid "Both list of files need to have their files different"
 msgstr ""
 
-#: rpyTranslations.py:378
+#: rpyTranslations.py:396
 # wide 110
 msgid ""
 "forFiles: List - The list of files where differences of translation need to be compared.\n"
 "FromFiles: List,... - Successions of list of files from where to get other translations.\n"
+"newpart: Booleen - Output or not comparisons of new-part of translations.\n"
+"reflines: Booleen - Output or not comparisons of reference-lines.\n"
+"trID: Booleen - Output or not comparisons of translation-identifiers.\n"
 "verbose: Integer - Indicate the level of verbosity, 0 to deactivate.\n"
 "debug: Booleen - Active or not the debuging. The amount in this function can be huge.\n"
 msgstr ""
 
-#: rpyTranslations.py:390 rpyTranslations.py:392 rpyTranslations.py:518
-#: rpyTranslations.py:619 rpyTranslations.py:621 rpyTranslations.py:707
-#: rpyTranslations.py:709 rpyTranslations.py:879 rpyTranslations.py:906
-#: rpyTranslations.py:952 rpyTranslations.py:982 rpyTranslations.py:1013
-#: rpyTranslations.py:1041 rpyTranslations.py:1078 rpyTranslations.py:1207
-#: rpyTranslations.py:1212 rpyTranslations.py:1217
+#: rpyTranslations.py:411 rpyTranslations.py:413 rpyTranslations.py:539
+#: rpyTranslations.py:640 rpyTranslations.py:642 rpyTranslations.py:739
+#: rpyTranslations.py:741 rpyTranslations.py:925 rpyTranslations.py:952
+#: rpyTranslations.py:998 rpyTranslations.py:1028 rpyTranslations.py:1059
+#: rpyTranslations.py:1092 rpyTranslations.py:1129 rpyTranslations.py:1259
+#: rpyTranslations.py:1264 rpyTranslations.py:1269
 msgid "Invalide argument:"
 msgstr ""
 
-#: rpyTranslations.py:390
+#: rpyTranslations.py:411
 msgid "untranslated parameter should be 1 for empty, 2 for pass, or 0 to deactivate"
 msgstr ""
 
-#: rpyTranslations.py:392
+#: rpyTranslations.py:413
 msgid "formats parameter should be of booleen type"
 msgstr ""
 
-#: rpyTranslations.py:394
+#: rpyTranslations.py:415
 msgid "Invalide parameters:"
 msgstr ""
 
-#: rpyTranslations.py:394
+#: rpyTranslations.py:415
 msgid "formats parameter need to be set to True or untranslated parameter need to be greater than 0 to indicate which checking to make"
 msgstr ""
 
-#: rpyTranslations.py:398 rpyTranslations.py:528 rpyTranslations.py:531
-#: rpyTranslations.py:631 rpyTranslations.py:634
+#: rpyTranslations.py:419 rpyTranslations.py:549 rpyTranslations.py:552
+#: rpyTranslations.py:652 rpyTranslations.py:655
 msgid "All files need to be different"
 msgstr ""
 
-#: rpyTranslations.py:504
+#: rpyTranslations.py:525
 # wide 110
 msgid ""
 "forFiles: List - The list of files where translations need to be checked.\n"
@@ -86,11 +89,11 @@ msgid ""
 "debug: Booleen - Active or not the debuging. The amount in this function can be huge.\n"
 msgstr ""
 
-#: rpyTranslations.py:518
+#: rpyTranslations.py:539
 msgid "action parameter should be P, C, or R"
 msgstr ""
 
-#: rpyTranslations.py:604
+#: rpyTranslations.py:625
 # wide 110
 msgid ""
 "forFiles: List - The list of files where empty translations need to be fixed.\n"
@@ -102,15 +105,15 @@ msgid ""
 "debug: Booleen - Active or not the debuging. The amount in this function can be huge.\n"
 msgstr ""
 
-#: rpyTranslations.py:619
+#: rpyTranslations.py:640
 msgid "reverse parameter should be of booleen type"
 msgstr ""
 
-#: rpyTranslations.py:621
+#: rpyTranslations.py:642
 msgid "proxy parameter should be of booleen type"
 msgstr ""
 
-#: rpyTranslations.py:692
+#: rpyTranslations.py:723
 # wide 110
 msgid ""
 "forFiles: List - The list of files where translations need to be reordered.\n"
@@ -123,15 +126,15 @@ msgid ""
 "debug: Booleen - Active or not the debuging.\n"
 msgstr ""
 
-#: rpyTranslations.py:707
+#: rpyTranslations.py:739
 msgid "proxy should be an integer between 0 and 3 (includes)"
 msgstr ""
 
-#: rpyTranslations.py:709
+#: rpyTranslations.py:741
 msgid "overwrite parameter should be N for no, A for ask, or F for force"
 msgstr ""
 
-#: rpyTranslations.py:830
+#: rpyTranslations.py:877
 #, python-brace-format
 msgid ""
 "For: {old}\n"
@@ -139,19 +142,19 @@ msgid ""
 "From: {From}"
 msgstr ""
 
-#: rpyTranslations.py:831
+#: rpyTranslations.py:878
 msgid "Warning:"
 msgstr ""
 
-#: rpyTranslations.py:831
+#: rpyTranslations.py:878
 msgid "Please note that the 'From' was found by proxy."
 msgstr ""
 
-#: rpyTranslations.py:833
+#: rpyTranslations.py:880
 msgid "Proceed?"
 msgstr ""
 
-#: rpyTranslations.py:862
+#: rpyTranslations.py:909
 # wide 110
 msgid ""
 "forFiles: List - The list of files that need to be populated.\n"
@@ -164,17 +167,17 @@ msgid ""
 "debug: Booleen - Active or not the debuging. The amount in this function can be huge.\n"
 msgstr ""
 
-#: rpyTranslations.py:879
+#: rpyTranslations.py:925
 msgid "the 1st argument need to one of the following:"
 msgstr ""
 
-#: rpyTranslations.py:879
+#: rpyTranslations.py:925
 msgid ""
 "\n"
 "  not"
 msgstr ""
 
-#: rpyTranslations.py:881
+#: rpyTranslations.py:927
 #, python-brace-format
 # wide 110 (tabulations "\t" do not count)
 msgid ""
@@ -203,12 +206,12 @@ msgid ""
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:906 rpyTranslations.py:952 rpyTranslations.py:982
-#: rpyTranslations.py:1013 rpyTranslations.py:1041 rpyTranslations.py:1078
+#: rpyTranslations.py:952 rpyTranslations.py:998 rpyTranslations.py:1028
+#: rpyTranslations.py:1059 rpyTranslations.py:1092 rpyTranslations.py:1129
 msgid "help commands do not accept any argument or option."
 msgstr ""
 
-#: rpyTranslations.py:909
+#: rpyTranslations.py:955
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations populate [--help] for_files... from_files... [options]\n"
@@ -254,7 +257,7 @@ msgid ""
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:955
+#: rpyTranslations.py:1001
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations fix-empty [--help] for_files... [options]\n"
@@ -284,7 +287,7 @@ msgid ""
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:985
+#: rpyTranslations.py:1031
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations check [--help] for_files... [options]\n"
@@ -315,7 +318,7 @@ msgid ""
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:1016
+#: rpyTranslations.py:1062
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations diff [--help] for_files... [options]\n"
@@ -330,6 +333,12 @@ msgid ""
 "\t\toptions:\n"
 "\t\t  -h, --help\n"
 "\t\t      Show this specific help for the 'diff' command and exit.\n"
+"\t\t  --ignore-newpart\n"
+"\t\t      Indicate if the comparisons of new-part of translations should be output or not.\n"
+"\t\t  --reflines\n"
+"\t\t      Indicate if the comparisons of reference-lines should be output or not.\n"
+"\t\t  --tr-id\n"
+"\t\t      Indicate if the comparisons of translation-identifiers should be output or not.\n"
 "\t\t  -% n, --multi n, --lists n\n"
 "\t\t      This allow to give the number of list from where other translations are get. This include the\n"
 "\t\t       first group of files (the for_files).\n"
@@ -339,11 +348,10 @@ msgid ""
 "\t\t      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.\n"
 "\t\t  -d, --debug\n"
 "\t\t      Activate the debug printings during the process. The output can be huge.\n"
-"\t\t* Please note that --skip-empty take precedence over --not-translate that take precedence over --empty.\n"
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:1044
+#: rpyTranslations.py:1095
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations reorder [--help] for_files... [options]\n"
@@ -380,26 +388,26 @@ msgid ""
 "\t\t"
 msgstr ""
 
-#: rpyTranslations.py:1147 rpyTranslations.py:1221
+#: rpyTranslations.py:1199 rpyTranslations.py:1282
 #, python-brace-format
 msgid "The file pair lists need to have equal length, {N} gived."
 msgid_plural "The file pair lists need to have equal length, {N} gived."
 msgstr[0] ""
 msgstr[1] ""
 
-#: rpyTranslations.py:1207
+#: rpyTranslations.py:1259
 #, python-format
 msgid "-% option should be an integer, give"
 msgstr ""
 
-#: rpyTranslations.py:1212
+#: rpyTranslations.py:1264
 msgid "--multi option should be an integer, give"
 msgstr ""
 
-#: rpyTranslations.py:1217
+#: rpyTranslations.py:1269
 msgid "--lists option should be an integer, give"
 msgstr ""
 
-#: rpyTranslations.py:1267
+#: rpyTranslations.py:1328
 msgid "An error occured:\n"
 msgstr ""
