@@ -49,7 +49,8 @@ reTDQ = r'"""(\\"|""?[^"]|[^"])*"""'
 reTSQ = r"'''(\\'|''?[^']|[^'])*'''"
 reQ = r'('+reTDQ+r'|'+reTSQ+r'|'+reDQ+r'|'+reSQ+r')'
 reP = r'(?P<p>_p\()?{Q}(?(p)\))'.format(Q=reQ)
-reN = r'(?P<NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
+reN_old = r'(?P<old_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
+reN_new = r'(?P<new_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
 rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '[' and reQ
 rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
@@ -122,7 +123,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_stringCmt = re.compile(reStringCmt.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	file_cache, frm_res = {}, {}
 	for fromFiles in FromFiles:# file caching loop
 		for forF, fromF in zip(forFiles, fromFiles):
@@ -188,7 +189,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 				Debug(f'Debug:match span {M.span()} is:\n{M.group()!r}')
 				Debug("Debug: new_str group =",repr(M.group('new_str')) if not Pass else 'pass')
 				if T == 1:
-					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 					M_from = m_from = _RE_dialog.search(file_cache[forF])
 					T_from, TID = 1, M.group('TID')
 					while not m_from is None and (m_from.group('TID') != TID or m_from.span() in _for_spans):
@@ -419,7 +420,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 		if forF in forFiles[:i]: Throw(Exception,_("All files need to be different"))
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	file_cache, frm_res = {}, {}
 	for forF in forFiles:
 		Verb('forFile:',repr(forF))
@@ -553,7 +554,7 @@ def fixEmpty(forFiles, /, action='P', *, outdir=None, verbose=0, debug=False):
 			popFiles.append(forF)
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	glob_ppl = 0
 	file_cache = {}
 	for forF in forFiles:
@@ -655,7 +656,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 			if forF in popFiles: Throw(Exception,_("All files need to be different"))
 			popFiles.append(forF)
 
-	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	glob_ppl = 0
 	file_cache = {}
 	for forF in forFiles:
@@ -758,7 +759,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			else: popFiles.append(forF)
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	RE_x = re.compile(reFrm)
 	glob_ppl = 0
 	file_cache = {}
@@ -830,7 +831,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 				Debug(f'Debug:match span {M.span()} is:\n{M.group()!r}')
 				Debug("Debug: new_str group =",repr(M.group('new_str')) if not Pass else 'pass')
 				if Pass or M.group('new_str') == '""' or overwrite != 'N':
-					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+					_RE_dialog = re.compile(reDialog.format(old=re.escape(M.group('old')), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 					_RE_string = re.compile(reString.format(old=re.escape(M.group('old')), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 					if T == 1:
 						RE_from = _RE_dialog
@@ -851,7 +852,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 						if proxy > 0:
 							by_proxy = True
 							if T == 1:
-								reNID = r'(?P<NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('NID'))
+								reNID = r'(?P<old_NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('old_NID'))
 								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reNID, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reNID, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 								TID = M.group('TID')
 								m_from = _RE_dialog.search(file_cache[fromF])
@@ -861,7 +862,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 									if not m_from is None and m_from.group('TID') == TID: M_from = m_from
 							if M_from is None and proxy > 1:
 								_RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{old})'.format(old=re.escape(M.group('old_str'))), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
-								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reN, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reN_old, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 								if T == 1:
 									m_from = _RE_dialog.search(file_cache[fromF])
 									while not m_from is None:# get the eventual latest
