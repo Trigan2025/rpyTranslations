@@ -1145,65 +1145,65 @@ if __name__ == '__main__':
 			Error(_("Invalide argument:"),_("help commands do not accept any argument or option."))
 		exit()
 	args,kargs = [],{}
-	if '-v' in sys.argv:
-		verbose = 1
-		try:
-			verbose = int(sys.argv[sys.argv.index('-v')+1])
-			sys.argv.pop(sys.argv.index('-v')+1)
-		except: pass
-		sys.argv.remove('-v')
-	elif '--verbose' in sys.argv:
+	if '--verbose' in sys.argv:
 		verbose = 1
 		try:
 			verbose = int(sys.argv[sys.argv.index('--verbose')+1])
 			sys.argv.pop(sys.argv.index('--verbose')+1)
 		except: pass
 		sys.argv.remove('--verbose')
-	if '-d' in sys.argv:
-		dbg = True
-		sys.argv.remove('-d')
-	elif '--debug' in sys.argv:
+	elif '-v' in sys.argv:
+		verbose = 1
+		try:
+			verbose = int(sys.argv[sys.argv.index('-v')+1])
+			sys.argv.pop(sys.argv.index('-v')+1)
+		except: pass
+		sys.argv.remove('-v')
+	if '--debug' in sys.argv:
 		dbg = True
 		sys.argv.remove('--debug')
+	elif '-d' in sys.argv:
+		dbg = True
+		sys.argv.remove('-d')
 	if dbg: print("Debug: args =",sys.argv)
 	if Cmd == 'populate':
 		O, D, N = 'N', None, 2
-		if '-f' in sys.argv:
+		if '--overwrite' in sys.argv:
 			O = 'F'
-			sys.argv.remove('-f')
+			sys.argv.remove('--overwrite')
 		elif '--force' in sys.argv:
 			O = 'F'
 			sys.argv.remove('--force')
-		elif '--overwrite' in sys.argv:
+		elif '-f' in sys.argv:
 			O = 'F'
-			sys.argv.remove('--overwrite')
-		if '-a' in sys.argv:
-			O = 'A'
-			sys.argv.remove('-a')
-		elif '--ask' in sys.argv:
+			sys.argv.remove('-f')
+		if '--ask' in sys.argv:
 			O = 'A'
 			sys.argv.remove('--ask')
-		if '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		elif '--subdir' in sys.argv:
+		elif '-a' in sys.argv:
+			O = 'A'
+			sys.argv.remove('-a')
+		if '--subdir' in sys.argv:
 			D = sys.argv.pop(sys.argv.index('--subdir')+1)
 			sys.argv.remove('--subdir')
-		if '-%' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('-%')+1)
+		elif '-o' in sys.argv:
+			D = sys.argv.pop(sys.argv.index('-o')+1)
+			sys.argv.remove('-o')
+		if '--lists' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('--lists')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('-%'),N)
-			sys.argv.remove('-%')
+			except: Error(("Invalide argument: {} option should be an integer, give").format('--lists'),N)
+			sys.argv.remove('--lists')
 		elif '--multi' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--multi')+1)
 			try: N = int(N)
 			except: Error(("Invalide argument: {} option should be an integer, give").format('--multi'),N)
 			sys.argv.remove('--multi')
-		elif '--lists' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--lists')+1)
+		elif '-%' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('--lists'),N)
-			sys.argv.remove('--lists')
+			except: Error(("Invalide argument: {} option should be an integer, give").format('-%'),N)
+			sys.argv.remove('-%')
 		if '--proxy' in sys.argv:
 			proxy = sys.argv.pop(sys.argv.index('--proxy')+1)
 			try: proxy = int(proxy)
@@ -1223,74 +1223,74 @@ if __name__ == '__main__':
 		args,kargs = [files1,*files2], {'proxy':proxy,'overwrite':O,'outdir':D,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'fix-empty':
 		A, D = 'P', None
-		if '-a' in sys.argv:
-			A = sys.argv.pop(sys.argv.index('-a')+1)
-			sys.argv.remove('-a')
-		elif '--action' in sys.argv:
+		if '--action' in sys.argv:
 			A = sys.argv.pop(sys.argv.index('--action')+1)
 			sys.argv.remove('--action')
-		if '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		elif '--subdir' in sys.argv:
+		elif '-a' in sys.argv:
+			A = sys.argv.pop(sys.argv.index('-a')+1)
+			sys.argv.remove('-a')
+		if '--subdir' in sys.argv:
 			D = sys.argv.pop(sys.argv.index('--subdir')+1)
 			sys.argv.remove('--subdir')
+		elif '-o' in sys.argv:
+			D = sys.argv.pop(sys.argv.index('-o')+1)
+			sys.argv.remove('-o')
 		files = sys.argv[1:]
 		if dbg: print(f"Debug: fixEmpty({files}, action={A!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'action':A,'outdir':D,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'check':
 		UnT, F = 1, False
-		if '-e' in sys.argv:
-			UnT = 1
-			sys.argv.remove('-e')
-		elif '--empty' in sys.argv:
+		if '--empty' in sys.argv:
 			UnT = 1
 			sys.argv.remove('--empty')
-		if '-p' in sys.argv:
-			UnT = 2
-			sys.argv.remove('-p')
-		elif '--not-translate' in sys.argv:
+		elif '-e' in sys.argv:
+			UnT = 1
+			sys.argv.remove('-e')
+		if '--not-translate' in sys.argv:
 			UnT = 2
 			sys.argv.remove('--not-translate')
-		if '-n' in sys.argv:
-			UnT = 0
-			sys.argv.remove('-n')
-		elif '--skip-empty' in sys.argv:
+		elif '-p' in sys.argv:
+			UnT = 2
+			sys.argv.remove('-p')
+		if '--skip-empty' in sys.argv:
 			UnT = 0
 			sys.argv.remove('--skip-empty')
-		if '-f' in sys.argv:
-			F = True
-			sys.argv.remove('-f')
-		elif '--format' in sys.argv:
+		elif '-n' in sys.argv:
+			UnT = 0
+			sys.argv.remove('-n')
+		if '--format' in sys.argv:
 			F = True
 			sys.argv.remove('--format')
+		elif '-f' in sys.argv:
+			F = True
+			sys.argv.remove('-f')
 		files = sys.argv[1:]
 		if dbg: print(f"Debug: check({files}, untranslated={UnT}, formats={F!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'untranslated':UnT,'formats':F,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'diff':
 		N, nP, refL, trID = 2, True, False, False
-		if '-%' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('-%')+1)
+		if '--lists' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('--lists')+1)
 			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
-			sys.argv.remove('-%')
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format(''),N)
+			sys.argv.remove('--lists')
 		elif '--multi' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--multi')+1)
 			try: N = int(N)
 			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--multi'),N)
 			sys.argv.remove('--multi')
-		elif '--lists' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--lists')+1)
+		elif '-%' in sys.argv:
+			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format(''),N)
-			sys.argv.remove('--lists')
-		elif '--ignore-newpart' in sys.argv:
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
+			sys.argv.remove('-%')
+		if '--ignore-newpart' in sys.argv:
 			nP = False
 			sys.argv.remove('--ignore-newpart')
-		elif '--reflines' in sys.argv:
+		if '--reflines' in sys.argv:
 			refL = True
 			sys.argv.remove('--reflines')
-		elif '--tr-ids' in sys.argv:
+		if '--tr-ids' in sys.argv:
 			trID = True
 			sys.argv.remove('--tr-ids')
 		argc = len(sys.argv)-1
@@ -1306,19 +1306,19 @@ if __name__ == '__main__':
 		args,kargs = [files1,*files2], {'newpart':nP,'reflines':refL,'trID':trID,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'reorder':
 		D, R, P = None, False, False
-		if '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		elif '--subdir' in sys.argv:
+		if '--subdir' in sys.argv:
 			D = sys.argv.pop(sys.argv.index('--subdir')+1)
 			sys.argv.remove('--subdir')
-		if '-r' in sys.argv:
-			R = True
-			sys.argv.remove('-r')
-		elif '--reverse' in sys.argv:
+		elif '-o' in sys.argv:
+			D = sys.argv.pop(sys.argv.index('-o')+1)
+			sys.argv.remove('-o')
+		if '--reverse' in sys.argv:
 			R = True
 			sys.argv.remove('--reverse')
-		elif '--proxy' in sys.argv:
+		elif '-r' in sys.argv:
+			R = True
+			sys.argv.remove('-r')
+		if '--proxy' in sys.argv:
 			P = True
 			sys.argv.remove('--proxy')
 		files = sys.argv[1:]
