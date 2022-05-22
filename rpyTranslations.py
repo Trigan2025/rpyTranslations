@@ -49,7 +49,7 @@ reTDQ = r'"""(\\"|""?[^"]|[^"])*"""'
 reTSQ = r"'''(\\'|''?[^']|[^'])*'''"
 reQ = r'('+reTDQ+r'|'+reTSQ+r'|'+reDQ+r'|'+reSQ+r')'
 reP = r'(?P<p>_p\()?{Q}(?(p)\))'.format(Q=reQ)
-reN_old = r'(?P<old_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
+reN_old = r'(?P<dID>(?P<old_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?)'.format(SQ=reSQ,DQ=reDQ)
 reN_new = r'(?P<new_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
 rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '[' and reQ
 rePass = r'pass( *#[^\n]*|\r?\n)'
@@ -851,9 +851,9 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 					if M_from is None:
 						if proxy > 0:
 							by_proxy = True
-							if T == 1:
-								reNID = r'(?P<old_NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('old_NID'))
-								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reNID, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reNID, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
+							if T == 1 and not M.group('old_NID') is None:
+								reNID_old = r'(?P<old_NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('old_NID'))
+								_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reNID_old, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 								TID = M.group('TID')
 								m_from = _RE_dialog.search(file_cache[fromF])
 								while not m_from is None and m_from.group('TID') != TID:# get the eventual latest
