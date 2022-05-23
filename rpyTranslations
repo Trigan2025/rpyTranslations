@@ -10,11 +10,11 @@ while test $# -gt 0; do
    if [ "$1" == '-o' -o "$1" == '--subdir' ]; then
       args="$args '$1' '`echo "$2" |sed "s/'/'\''/g"`'"
       shift
-   elif test -f "$1"; then args="$args '`realpath "$1" |sed "s/'/'\''/g"`'"
+   elif test -f -- "$1"; then args="$args '`realpath "$1" |sed "s/'/'\''/g"`'"
    else args="$args '`echo "$1" |sed "s/'/'\''/g"`'"
    fi
    shift
 done
 cd "<path_to_rpyTranslations_dir>"#ex: $HOME/Documents/Python3
-/bin/sh -c -- "python3 -m rpyTranslations $args"
+/bin/sh -c -- "python3 -m -- rpyTranslations $args"
 cd "$cur_dir"
