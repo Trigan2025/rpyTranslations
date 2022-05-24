@@ -1,20 +1,25 @@
 #!/bin/bash -i
-set +o history
+set -o posix +o history
 cur_dir=$PWD
 if [ "$1" == '-h' -o "$1" == '--help' ]; then
    args="$1"
    echo "rpyTranslations (populate|fix-empty|check|diff|reorder|--help) [args] [options]"
    shift
 fi
+d=0
 while test $# -gt 0; do
    if [ "$1" == '-o' -o "$1" == '--subdir' ]; then
-      args="$args '$1' '`echo "$2" |sed "s/'/'\''/g"`'"
+      args="$args $1 `printf "%q" "$2"`"
       shift
-   elif test -f -- "$1"; then args="$args '`realpath "$1" |sed "s/'/'\''/g"`'"
-   else args="$args '`echo "$1" |sed "s/'/'\''/g"`'"
+   elif [ "$1" == '-d' -o "$1" == '--debug' ]; then
+      args="$args $1"
+      d=1
+   elif test -f "$1"; then args="$args $(printf "%q" "`realpath "$1"`")"
+   else args="$args `printf "%q" "$1"`"
    fi
    shift
 done
+test $d -eq 1 && echo "DEBUG::Call: python3 -m rpyTranslations $args"
 cd "<path_to_rpyTranslations_dir>"#ex: $HOME/Documents/Python3
-/bin/sh -c -- "python3 -m -- rpyTranslations $args"
+/bin/sh -c -- "python3 -m rpyTranslations $args"
 cd "$cur_dir"

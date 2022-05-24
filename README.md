@@ -65,14 +65,16 @@ However, it's also possible to make inline functions to ease (shortened) the use
 
 Exemple:
 ```sh
-tlFor() { echo "$HOME/Documents/RenPy/Translation maker/game/tl/$1/$2.rpy"; }
-tl() { echo "<games_abs_path>/$1/game/tl/$2/$3.rpy"; }
-rpyTranslations populate "`tlFor <lang> common`" "`tlFor <lang> options`" "`tl '<GameProject>/<version>' <lang> common`" "`tl '<GameProject>/<version>' <lang> options`"
+tlFor() { L=$1;shift; while [ $# -gt 0 ]; do printf " %q" "$HOME/Documents/Ren'Py/Translation maker/game/tl/$L/$1.rpy"; shift; done; }
+tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
+
+sh -c -- "rpyTranslations populate `tlFor <lang> common options` `tl <GameProject> <version> <lang> common options`"
 ```
 Or if you are in the 'For' directory:
 ```sh
-tl() { echo "<games_abs_path>/$1/game/tl/$2/$3.rpy"; }
-rpyTranslations populate "./common.rpy" "./options.rpy" "`tl '<GameProject>/<version>' <lang> common`" "`tl '<GameProject>/<version>' <lang> options`"
+tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
+
+sh -c -- "rpyTranslations populate ./common.rpy ./options.rpy `tl <GameProject> <version> <lang> common options`"
 ```
 
 ### On Windows
