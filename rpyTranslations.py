@@ -224,8 +224,8 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 					xVerb("Is removed:",repr(M.group('old')))
 					res[0].append((*M.span(),M.group()))
 				else:
-					if T == 1:# to ensure all groups are present
-						M_from = RE_dialog.search(file_cache[forF], M_from.start())
+					if T_from == 1:# to ensure all groups are present
+						M_from = RE_dialog.search(file_cache[fromF], M_from.start())
 						Debug("Debug: M is",repr(M),"\n  M_from is",repr(M_from))
 					_for_spans.append(M_from.span())
 					_res = []
@@ -483,17 +483,22 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 				res = []
 				if T == 1 and M.group('dID') != None:
 					nId,nid = M.group('old_NID'), M.group('new_NID')
-					s_nId = not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), nId) is None
-					if s_nId and nId == nid:
-						xVerb("The new string name of the dialog-identifier not changed from:",nId)
-						res.append(("dialog-id","name-str",nId))
-					elif not s_nId and nId != nid:
-						xVerb("The new name of the dialog-identifier as changed from:",nId,"to:",nid)
-						res.append(("dialog-id","name",nId,nid))
-					elif M.group('dID') != M.group('new_dID'):
-						dId,did = M.group('dID'), M.group('new_dID')
-						xVerb("The new dialog-identifier as changed from:",dId,"to:",did)
-						res.append(("dialog-id","attr",dId,did))
+					if not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), nId) is None:
+						if nId == nid:
+							xVerb("The new string name of the dialog-identifier as not changed from:",nId)
+							res.append(("dialog-id","name-str",nId))
+						elif M.group('dID') != M.group('new_dID'):# For now it will also match for the translated name difference, but it is ok
+							dId,did = M.group('dID'), M.group('new_dID')
+							xVerb("The new dialog-identifier as changed from:",dId,"to:",did)
+							res.append(("dialog-id","attr",dId,did))
+					else:
+						if nId != nid:
+							xVerb("The new name of the dialog-identifier as changed from:",nId,"to:",nid)
+							res.append(("dialog-id","name",nId,nid))
+						elif M.group('dID') != M.group('new_dID'):
+							dId,did = M.group('dID'), M.group('new_dID')
+							xVerb("The new dialog-identifier as changed from:",dId,"to:",did)
+							res.append(("dialog-id","attr",dId,did))
 				if formats:
 					o_str,n_str = eval(M.group('old_str')),eval(M.group('new_str'))# since we now they are string, np
 					o,n = re.search(r'^\s*', o_str),re.search(r'^\s*', n_str)
@@ -533,6 +538,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 			S, keys = f"For: {forF}", sorted(frmF.keys())
 			if untranslated != 0:
 				S += "\nNot translated: "+str(file_cache[forF+':E'])
+				del file_cache[forF+':E']
 			for k in keys:
 				at = [str(Line(file_cache[forF+':L'], n)) for n in k]
 				S += f"\n!@Lines {':'.join(at)}:"
@@ -563,7 +569,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 			fName = os.path.splitext(fPath[1])[0]+'.check-info'
 			with open(os.path.join(fPath[0],fName), 'w') as f:
 				f.write(S)
-	elif untranslated != 0:
+	if untranslated != 0:
 		for k in [f for f in file_cache.keys() if f.endswith(':E')]:
 			fPath = os.path.split(k[:-2])
 			fName = os.path.splitext(fPath[1])[0]+'.check-info'
@@ -811,17 +817,35 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 	RE_x = re.compile(reFrm)
 	glob_ppl = 0
 	file_cache = {}
-	def _search(what, fromF):
+	def _find(With, T, M, into):
+		M_from, m_from = None, With.search(file_cache[into])
+		Debug("Debug: T=",T," m_from:",repr(m_from))
+		if T == 1:
+			T_from = 1
+			TID = M.group('TID')
+			while not m_from is None and (M_from is None or M_from.group('TID') != TID):# get the eventual latest
+				if RE_pass.match(m_from.group('new')) is None:
+					M_from = m_from
+					if m_from.group('TID') == TID: break
+				m_from = With.search(file_cache[into], m_from.end())
+		else:
+			T_from = 0
+			while not m_from is None:# get the eventual latest
+				M_from = m_from
+				m_from = With.search(file_cache[into], m_from.end())
+		return (M_from,T_from)
+	def _proxysearch(what, fromF):
+		T_from = 0
 		M, M_string,M_dialog = None, RE_string.search(file_cache[fromF],pos), RE_dialog.search(file_cache[fromF],pos)
 		corresp, w = {}, eval(what)# since we now this is string, np
 		while not (M_string is None and M_dialog is None):
 			if not M_string is None and not M_dialog is None:
 				if M_dialog.start() < M_string.start():
-					M = M_dialog
+					T_from, M = 1, M_dialog
 				else:
-					M = M_string
+					T_from, M = 0, M_string
 			else:
-				M = M_string if M_dialog is None else M_dialog
+				T_from, M = (0, M_string) if M_dialog is None else (1, M_dialog)
 			Pass = not RE_pass.match(M.group('new')) is None
 			if not Pass and M.group('new_str') != '""':
 				o_str = eval(M.group('old_str'))# since we now this is string, np
@@ -832,7 +856,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 						x = RE_x.search(o_str, x.start())
 					else: x = RE_x.search(o_str, x.end())
 				c = cmp(w, o_str)
-				if c >= .90: corresp[(c, M.start())] = M
+				if c >= .90: corresp[(c, M.start())] = (T_from, M)
 			pos = M.end()
 			M_string,M_dialog = RE_string.search(file_cache[fromF],pos), RE_dialog.search(file_cache[fromF],pos)
 		return corresp[sorted(corresp.keys())[-1]] if len(corresp.keys()) != 0 else None
@@ -885,19 +909,11 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 						RE_from = _RE_dialog
 					else:
 						RE_from = _RE_string
-					m_from = RE_from.search(file_cache[fromF])
-					Debug("Debug: T=",T," m_from:",repr(m_from))
-					if T == 1:
-						TID = M.group('TID')
-						while not m_from is None and (M_from is None or M_from.group('TID') != TID):# get the eventual latest
-							if RE_pass.match(m_from.group('new')) is None:
-								M_from = m_from
-								if m_from.group('TID') == TID: break
-							m_from = RE_from.search(file_cache[fromF], m_from.end())
-					else:
-						while not m_from is None:# get the eventual latest
-							M_from = m_from
-							m_from = RE_from.search(file_cache[fromF], m_from.end())
+					M_from, T_from = _find(RE_from, T, M, fromF)
+					if M_from is None:
+						for F in [fF for fF in fromFiles if fF != fromF]:
+							M_from, T_from = _find(RE_from, T, M, fromF)
+							if not M_from is None: break
 					Debug("Debug: M_from:",repr(M_from))
 					if M_from is None:
 						if proxy > 0:
@@ -921,12 +937,14 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 										if RE_pass.match(m_from.group('new')) is None: M_from = m_from
 										m_from = _RE_dialog.search(file_cache[fromF], m_from.end())
 									if m_from is None:
+										T_from = 0
 										m_from = _RE_string.search(file_cache[fromF])
 										while not m_from is None:# get the eventual latest
 											M_from = m_from
 											m_from = _RE_string.search(file_cache[fromF], m_from.end())
 								if M_from is None and proxy >= 3:
 									if T == 0:
+										T_from = 1
 										m_from = _RE_dialog.search(file_cache[fromF])
 										while not m_from is None:# get the eventual latest
 											M_from = m_from
@@ -934,14 +952,26 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 									else:
 										pass# same as for proxy 2
 								if M_from is None and proxy >= 4:
-									M_from = _search(M.group('old_str'), fromF)
+									T_from, M_from = _proxysearch(M.group('old_str'), fromF)
 						if M_from is None: Debug('Debug:from_match span (-1, -1) is:\n""')
 					else: Debug(f'Debug:from_match span {M_from.span()} is:\n{M_from.group()!r}')
 					if not M_from is None and M_from.group('new_str') == '""': M_from = None
 				if not M_from is None:
+					if T_from == 1:# to ensure all groups are present
+						M_from = RE_dialog.search(file_cache[fromF], M_from.start())
+						Debug("Debug: M is",repr(M),"\n  M_from is",repr(M_from))
 					A = None
 					if (not by_proxy and not Pass and not M.group('new_str') in ('""', M_from.group('new_str')) and overwrite == 'A') or (by_proxy and (Pass or M.group('new_str') == '""')):
-						print(_("For: {old}\nAttempt to replace: {new}\nFrom: {From}").format(old=M.group('old_str'), new=M.group('new_str') if not Pass else 'pass', From=M_from.group('new_str')))
+						if T == 1:
+							if T_from == 1:
+								print(_("For: {N_old}\n\t{old}\nAttempt to replace: {N_new}\n\t{new}\nWith: {N_From}\n\t{From}").format(N_old=M.group('dID'),old=M.group('old_str'), N_new=M.group('new_dID') if not Pass else '', new=M.group('new_str') if not Pass else 'pass', N_From=M_from.group('new_dID'), From=M_from.group('new_str')))
+							else:
+								print(_("For: {N_old}\n\t{old}\nAttempt to replace: {N_new}\n\t{new}\nWith:\n\t{From}").format(N_old=M.group('dID'),old=M.group('old_str'), N_new=M.group('new_dID') if not Pass else '', new=M.group('new_str') if not Pass else 'pass', From=M_from.group('new_str')))
+						else:
+							if T_from == 1:
+								print(_("For:\n\t{old}\nAttempt to replace:\n\t{new}\nWith: {N_From}\n\t{From}").format(old=M.group('old_str'), new=M.group('new_str') if not Pass else 'pass', N_From=M_from.group('new_dID'), From=M_from.group('new_str')))
+							else:
+								print(_("For:\n\t{old}\nAttempt to replace:\n\t{new}\nWith:\n\t{From}").format(old=M.group('old_str'), new=M.group('new_str') if not Pass else 'pass', From=M_from.group('new_str')))
 						if by_proxy: print(_("Warning:"),_("Please note that the 'From' was found by proxy."))
 						while not A:
 							A = input(_("Proceed?")+" (N|Y) >>> ")
@@ -962,16 +992,24 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			Verb('A total of',ppl,'translations was populate')
 			group_ppl += ppl
 			glob_ppl += ppl
+			with open(forF, 'w', newline='') as f:
+				f.write(file_cache[forF])
 		Verb('A total of',group_ppl,'translations was populate with this group of from-files')
 
-		for forF, popF in zip(forFiles, popFiles):
-			with open(popF, 'w', newline='') as f:
-				f.write(file_cache[forF])
-
-	_populate(forFiles, FromFiles[0])
-	if len(FromFiles) > 1:
-		for fromFiles in FromFiles[1:]:
-			_populate(popFiles, fromFiles)
+	for forF, popF in zip(forFiles, popFiles):
+		Verb('forFile:',repr(forF))
+		if not forF in file_cache.keys():
+			F, dbg = "", 0
+			with open(forF, 'r', newline='') as f:
+				r=None
+				while r!="":
+					r = f.read()
+					dbg += 1
+					Debug('Debug:read pass',dbg)
+					F += r
+			file_cache[popF] = F
+	for fromFiles in FromFiles:
+		_populate(popFiles, fromFiles)
 	Verb('A total of',glob_ppl,'translations was populate in globality')
 populate.__doc__ = _("""\
 forFiles: List - The list of files that need to be populated.
