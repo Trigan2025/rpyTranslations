@@ -4,9 +4,12 @@ from unicodedata import normalize as NZ
 from textwrap import dedent
 __all__=['populate','fixEmpty','check','reorder','diff']
 
-TR, LANG = None, locale.getdefaultlocale()
-CSET=LANG[1]
-LANG=(LANG[0],LANG[0].split('_')[0])
+TR = None
+if os.name == 'nt':
+	from ctypes import windll
+	LANG = locale.windows_locale.get(windll.kernel32.GetThreadUILanguage(),'')
+else: LANG = locale.getdefaultlocale()[0]
+LANG=(LANG,LANG.split('_')[0])
 if os.path.isdir('./locale'):
 	TR = gettext.translation('rpyTranslations', localedir='./locale', languages=LANG, fallback=True)
 if (TR is None or type(TR) is gettext.NullTranslations) and os.path.isdir('../locale'):
@@ -121,9 +124,9 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 			Throw(Exception,_("The length of both list of files need to be equal"))
 		for forF, fromF in zip(forFiles, fromFiles):
 			if not os.path.isfile(forF):
-				Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
+				Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 			if not os.path.isfile(fromF):
-				Throw(FileNotFoundError,repr(fromF),_("doen't exist or is not a file"))
+				Throw(FileNotFoundError,repr(fromF),_("doen’t exist or is not a file"))
 			if forF == fromF:
 				Throw(Exception,_("Both list of files need to have their files different"))
 
@@ -332,7 +335,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 					M_string, M_stringCmt, M_dialog = RE_string.search(file_cache[forF], pos), RE_stringCmt.search(file_cache[forF], pos), RE_dialog.search(file_cache[forF], pos)
 					continue
 				Pass = not RE_pass.match(M.group('new')) is None
-				# _for_spans contain all matching span with fromFile, so if we're here we already now it's add
+				# _for_spans contain all matching span with fromFile, so if we’re here we already now it’s add
 				if Pass:
 					xVerb("Set to pass but added:",repr(M.group('old')))
 					res[1].append((*M.span(),"passed"))
@@ -423,7 +426,7 @@ FromFiles: List,... - Successions of list of files from where to get other trans
 newpart: Booleen - Output or not comparisons of new-part of translations.
 reflines: Booleen - Output or not comparisons of reference-lines.
 trID: Booleen - Output or not comparisons of translation-identifiers.
-verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging. The amount in this function can be huge.
 """)
 
@@ -437,7 +440,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('formats'), code=2)
 	for i,forF in enumerate(forFiles):
 		if not os.path.isfile(forF):
-			Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
+			Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 		if forF in forFiles[:i]: Throw(Exception,_("All files need to be different"))
 
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
@@ -578,9 +581,9 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 check.__doc__ = _("""\
 forFiles: List - The list of files where translations need to be checked.
 untranslated: Integer - Should be: 1 to check empty, 2 to also check passed, or 0 to deactivate.
-formats: Booleen - Check or no the formating into translations.
+formats: Booleen - Check or not translations formatting.
          Like leading white-spaces, brackets ([]) and braces ({}).
-verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging. The amount in this function can be huge.
 """)
 
@@ -593,7 +596,7 @@ def fixEmpty(forFiles, /, action='P', *, outdir=None, verbose=0, debug=False):
 	popFiles = []
 	for forF in forFiles:
 		if not os.path.isfile(forF):
-			Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
+			Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 		if not outdir is None:
 			fPath = os.path.split(forF)
 			if not os.path.isdir(os.path.join(fPath[0],outdir)):
@@ -683,7 +686,7 @@ action: Char - Should be: 'P' to change empty translation to the 'pass' keyword,
         'strings' translations instead of deleting them, or 'R' to remove all empty or passed translation.
 outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None
         to save inplace.
-verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging. The amount in this function can be huge.
 """)
 
@@ -698,7 +701,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 	popFiles = []
 	for forF in forFiles:
 		if not os.path.isfile(forF):
-			Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
+			Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 		if not outdir is None:
 			fPath = os.path.split(forF)
 			if not os.path.isdir(os.path.join(fPath[0],outdir)):
@@ -782,14 +785,16 @@ proxy: Booleen - Active or not the regroupement in function of their normalized 
        representation.
 outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None
         to save inplace.
-verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging.
 """)
 
-def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=0, debug=False):
+def populate(forFiles, *FromFiles, bunch=False, proxy=0, overwrite='N', outdir=None, verbose=0, debug=False):
 	Verb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=1 else None
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
+	if not isinstance(bunch, bool):
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('bunch'), code=2)
 	if not proxy in (0,1,2,3,4):
 		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be an integer between 0 and 4 (includes)").format('proxy'), code=2)
 	if not overwrite in ('N','A','F'):
@@ -800,9 +805,9 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			Throw(Exception,_("The length of both list of files need to be equal"))
 		for forF, fromF in zip(forFiles, fromFiles):
 			if not os.path.isfile(forF):
-				Throw(FileNotFoundError,repr(forF),_("doen't exist or is not a file"))
+				Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 			if not os.path.isfile(fromF):
-				Throw(FileNotFoundError,repr(fromF),_("doen't exist or is not a file"))
+				Throw(FileNotFoundError,repr(fromF),_("doen’t exist or is not a file"))
 			if forF == fromF:
 				Throw(Exception,_("Both list of files need to have their files different"))
 			if not outdir is None:
@@ -910,7 +915,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 					else:
 						RE_from = _RE_string
 					M_from, T_from = _find(RE_from, T, M, fromF)
-					if M_from is None:
+					if M_from is None and bunch:
 						for F in [fF for fF in fromFiles if fF != fromF]:
 							M_from, T_from = _find(RE_from, T, M, fromF)
 							if not M_from is None: break
@@ -972,7 +977,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 								print(_("For:\n\t{old}\nAttempt to replace:\n\t{new}\nWith: {N_From}\n\t{From}").format(old=M.group('old_str'), new=M.group('new_str') if not Pass else 'pass', N_From=M_from.group('new_dID'), From=M_from.group('new_str')))
 							else:
 								print(_("For:\n\t{old}\nAttempt to replace:\n\t{new}\nWith:\n\t{From}").format(old=M.group('old_str'), new=M.group('new_str') if not Pass else 'pass', From=M_from.group('new_str')))
-						if by_proxy: print(_("Warning:"),_("Please note that the 'From' was found by proxy."))
+						if by_proxy: print(_("Warning:"),_("Please note that the 'With' was found by proxy."))
 						while not A:
 							A = input(_("Proceed?")+" (N|Y) >>> ")
 							if A.upper() in ('Y','YES'): A='P' if by_proxy else 'Y'
@@ -1014,11 +1019,13 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 populate.__doc__ = _("""\
 forFiles: List - The list of files that need to be populated.
 FromFiles: List,... - Successions of list of files from where to get the translations.
+bunch: Booleen - Indicates if, when a translation is not found, it should be searched for in other files
+       in the current fromFiles group.
 proxy: Integer - From 0 to 4 (includes) to indicate a level of proxy, 0 to diactivate, 4 made it long.
-overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force.
+overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force. (verbose is recommand with 'A')
 outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None
         to save inplace.
-verbose: Integer - Indicate the level of verbosity, 0 to deactivate.
+verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging. The amount in this function can be huge.
 """)
 
@@ -1037,7 +1044,7 @@ if __name__ == '__main__':
 		-h, --help
 		  Show this general help and exit.
 		  Enter a command followed the help one to see their specific help.
-		  Please note that help commands obviousely doesn't accept any args or options even if they still
+		  Please note that help commands obviousely doesn’t accept any args or options even if they still
 		   show the requested help.
 		args
 		  Their are specific for each command and generaly should be put in a specific order.
@@ -1067,8 +1074,11 @@ if __name__ == '__main__':
 		options:
 		  -h, --help
 		      Show this specific help for the 'populate' command and exit.
+		  --bunch
+		      Indicates if, when a translation is not found, it should be searched for in other files in the
+		       current from-files group.
 		  -o dir, --subdir dir
-		      If put, it indicate a sub-directory to where the populated translation files are saved,
+		      If put, it indicates a sub-directory to where the populated translation files are saved,
 		       otherwise on the for-files themself.
 		  -% n, --multi n, --lists n
 		      This allow to give the number of list from where merging multiple translations. This include
@@ -1079,6 +1089,7 @@ if __name__ == '__main__':
 		          * Where from_files[#] are group of files of the same length as forFiles.
 		  -a, --ask
 		      If put, a prompt will ask to confirm or no a replacement of translation (only for non-empty).
+		      It’s recommand to use the verbose option with that, so you can know for what file the asking is.
 		  -f, --force, --overwrite
 		      Activate the replacement of existing translations.
 		  --proxy lvl
@@ -1122,7 +1133,7 @@ if __name__ == '__main__':
 		          R   All empty translation are removed. Please note that this also remove 'dialogs'
 		               translation set with the 'pass' keyword.
 		  -o dir, --subdir dir
-		      If put, it indicate a sub-directory to where the fixed translation files are saved, otherwise
+		      If put, it indicates a sub-directory to where the fixed translation files are saved, otherwise
 		       on the for-files themself.
 		  -v [lvl], --verbose [lvl]
 		      Activate the verbosity during the process.
@@ -1179,11 +1190,11 @@ if __name__ == '__main__':
 		  -h, --help
 		      Show this specific help for the 'diff' command and exit.
 		  --ignore-newpart
-		      Indicate if the comparisons of new-part of translations should be output or not.
+		      Indicates if the comparisons of new-part of translations should be output or not.
 		  --reflines
-		      Indicate if the comparisons of reference-lines should be output or not.
+		      Indicates if the comparisons of reference-lines should be output or not.
 		  --tr-id
-		      Indicate if the comparisons of translation-identifiers should be output or not.
+		      Indicates if the comparisons of translation-identifiers should be output or not.
 		  -% n, --multi n, --lists n
 		      This allow to give the number of list from where other translations are get. This include the
 		       first group of files (the for_files).
@@ -1205,14 +1216,14 @@ if __name__ == '__main__':
 
 		This command try regrouping similiar translations to ease translations and comprisons of equivalant
 		 translations.
-		Since 'strings' translations are generaly unique, it should be note that it's only work for 'dialogs'.
+		Since 'strings' translations are generaly unique, it should be note that it’s only work for 'dialogs'.
 		Also, all occurences are regrouping to the first occurence place.
 
 		options:
 		  -h, --help
 		      Show this specific help for the 'reorder' command and exit.
 		  -o dir, --subdir dir
-		      If put, it indicate a sub-directory to where the reordered translation files are saved,
+		      If put, it indicates a sub-directory to where the reordered translation files are saved,
 		       otherwise on the for-files themself.
 		  -r, --reverse
 		      If put, try to reordering as it was originaly (as extracted by Ren'Py) through the
@@ -1257,7 +1268,10 @@ if __name__ == '__main__':
 		sys.argv.remove('-d')
 	if dbg: print("Debug: args =",sys.argv)
 	if Cmd == 'populate':
-		O, D, N = 'N', None, 2
+		O, D, N, Bc, Bk = 'N', None, 2, False, 0
+		if '--bunch' in sys.argv:
+			Bc = True
+			sys.argv.remove('--bunch')
 		if '--overwrite' in sys.argv:
 			O = 'F'
 			sys.argv.remove('--overwrite')
@@ -1279,25 +1293,32 @@ if __name__ == '__main__':
 		elif '-o' in sys.argv:
 			D = sys.argv.pop(sys.argv.index('-o')+1)
 			sys.argv.remove('-o')
+		if False:#'--bulk' in sys.argv:# TODO: This option is not yet implemented
+			Bk = 1
+			try:
+				verbose = int(sys.argv[sys.argv.index('--bulk')+1])
+				sys.argv.pop(sys.argv.index('--bulk')+1)
+			except: pass
+			sys.argv.remove('--bulk')
 		if '--lists' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--lists')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('--lists'),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--lists'),N)
 			sys.argv.remove('--lists')
 		elif '--multi' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('--multi')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('--multi'),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--multi'),N)
 			sys.argv.remove('--multi')
 		elif '-%' in sys.argv:
 			N = sys.argv.pop(sys.argv.index('-%')+1)
 			try: N = int(N)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('-%'),N)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
 			sys.argv.remove('-%')
 		if '--proxy' in sys.argv:
 			proxy = sys.argv.pop(sys.argv.index('--proxy')+1)
 			try: proxy = int(proxy)
-			except: Error(("Invalide argument: {} option should be an integer, give").format('--proxy'),proxy)
+			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--proxy'),proxy)
 			sys.argv.remove('--proxy')
 		else: proxy = 0
 		argc = len(sys.argv)-1
@@ -1309,8 +1330,8 @@ if __name__ == '__main__':
 		for i,f in enumerate(sys.argv[1+N:]):
 			if i%N == 0: files2.append([f])
 			else: files2[-1].append(f)
-		if dbg: print(f"Debug: populate({files1}, {files2}, proxy={proxy}, overwrite={O!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
-		args,kargs = [files1,*files2], {'proxy':proxy,'overwrite':O,'outdir':D,'verbose':verbose,'debug':dbg}
+		if dbg: print(f"Debug: populate({files1}, {files2}, bunch={Bc}, proxy={proxy}, overwrite={O!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
+		args,kargs = [files1,*files2], {'buch':Bc,'proxy':proxy,'overwrite':O,'outdir':D, 'verbose':verbose,'debug':dbg}
 	elif Cmd == 'fix-empty':
 		A, D = 'P', None
 		if '--action' in sys.argv:
