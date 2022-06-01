@@ -68,13 +68,13 @@ Exemple:
 tlFor() { L=$1;shift; while [ $# -gt 0 ]; do printf " %q" "$HOME/Documents/Ren'Py/Translation maker/game/tl/$L/$1.rpy"; shift; done; }
 tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
 
-sh -c -- "rpyTranslations populate `tlFor <lang> common options` `tl <GameProject> <version> <lang> common options`"
+sh -c -- "rpyTranslations populate --subdir ../populates `tlFor <lang> common options` `tl <GameProject> <version> <lang> common options`"
 ```
 Or if you are in the 'For' directory:
 ```sh
 tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
 
-sh -c -- "rpyTranslations populate ./common.rpy ./options.rpy `tl <GameProject> <version> <lang> common options`"
+sh -c -- "rpyTranslations populate --subdir ../populates ./common.rpy ./options.rpy `tl <GameProject> <version> <lang> common options`"
 ```
 
 ### On Windows
@@ -86,12 +86,12 @@ However, it's also possible to make inline functions to ease (shortened) the use
 
 Exemple:
 ```powershell
-function tlFor([string]$L, [string]$N) { "{0}\Documents\RenPy\Translation maker\game\tl\{1}\{2}.rpy" -f $HOME, $L, $N }
-function tl([string]$P, [string]$L, [string]$N) { "<games_abs_path>\{0}\game\tl\{1}\{2}.rpy" -f $P, $L, $N }
-rpyTranslations populate "$(tlFor <lang> common)" "$(tlFor <lang> options)" "$(tl '<GameProject>\<version>' <lang> common)" "$(tl '<GameProject>\<version>' <lang> options)"
+function tlFor() { $L="$($Args[0])"; $A = [Collections.Generic.List[string]]::new(); for (($i=1); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("$($HOME)\Documents\RenPy\Translation maker\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
+function tl() { $G="$($Args[0])";$ver="$($Args[1])";$L="$($Args[2])"; $A = [Collections.Generic.List[string]]::new(); for (($i=3); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("<games_abs_path>\$($G)\$($ver)\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
+Invoke-Expression "rpyTranslations populate -SubDir ..\populates $(tlFor <lang> common options) $(tl <GameProject> <version> <lang> common options)"
 ```
 Or if you are in the 'For' directory:
 ```powershell
-function tl([string]$P, [string]$L, [string]$N) { "<games_abs_path>\{0}\game\tl\{1}\{2}.rpy" -f $P, $L, $N }
-rpyTranslations populate ".\common.rpy" ".\options.rpy" "$(tl '<GameProject>\<version>' <lang> common)" "$(tl '<GameProject>\<version>' <lang> options)"
+function tl() { $G="$($Args[0])";$ver="$($Args[1])";$L="$($Args[2])"; $A = [Collections.Generic.List[string]]::new(); for (($i=3); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("<games_abs_path>\$($G)\$($ver)\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
+Invoke-Expression "rpyTranslations populate -SubDir ..\populates .\common.rpy .\options.rpy $(tl <GameProject> <version> <lang> common options)"
 ```

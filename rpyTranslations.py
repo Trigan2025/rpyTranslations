@@ -136,7 +136,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 			Debug('forFile:',repr(forF))
 			if not forF in file_cache.keys():
 				F = ""
-				with open(forF, 'r', newline='') as f:
+				with open(forF, 'r', encoding='utf-8', newline='') as f:
 					L, file_cache[forF+':L'] = 0, []
 					for line in f:
 						L += len(line)
@@ -147,7 +147,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 			Debug('fromFile:',repr(fromF))
 			if not fromF in file_cache.keys():
 				F = ""
-				with open(fromF, 'r', newline='') as f:
+				with open(fromF, 'r', encoding='utf-8', newline='') as f:
 					L, file_cache[fromF+':L'] = 0, []
 					for line in f:
 						L += len(line)
@@ -415,7 +415,7 @@ def diff(forFiles, *FromFiles, newpart=True, reflines=False, trID=False, verbose
 		Verb(S)
 		fPath = os.path.split(forF)
 		fName = os.path.splitext(fPath[1])[0]+'.diff'
-		with open(os.path.join(fPath[0],fName), 'w') as f:
+		with open(os.path.join(fPath[0],fName), 'w', encoding='utf-8') as f:
 			f.write(S)
 diff.__doc__ = _("""\
 forFiles: List - The list of files where differences of translation need to be compared.
@@ -447,7 +447,7 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 		Verb('forFile:',repr(forF))
 		if not forF in file_cache.keys():
 			F = ""
-			with open(forF, 'r', newline='') as f:
+			with open(forF, 'r', encoding='utf-8', newline='') as f:
 				L, file_cache[forF+':L'] = 0, []
 				for line in f:
 					L += len(line)
@@ -567,13 +567,13 @@ def check(forFiles, /, untranslated=1, formats=False, *, verbose=0, debug=False)
 			xVerb(S)
 			fPath = os.path.split(forF)
 			fName = os.path.splitext(fPath[1])[0]+'.check-info'
-			with open(os.path.join(fPath[0],fName), 'w') as f:
+			with open(os.path.join(fPath[0],fName), 'w', encoding='utf-8') as f:
 				f.write(S)
 	if untranslated != 0:
 		for k in [f for f in file_cache.keys() if f.endswith(':E')]:
 			fPath = os.path.split(k[:-2])
 			fName = os.path.splitext(fPath[1])[0]+'.check-info'
-			with open(os.path.join(fPath[0],fName), 'w') as f:
+			with open(os.path.join(fPath[0],fName), 'w', encoding='utf-8') as f:
 				f.write("Not translated: "+str(file_cache[k]))
 check.__doc__ = _("""\
 forFiles: List - The list of files where translations need to be checked.
@@ -613,7 +613,7 @@ def fixEmpty(forFiles, /, action='P', *, outdir=None, verbose=0, debug=False):
 		Verb('forFile:',repr(forF))
 		if not forF in file_cache.keys():
 			F, dbg = "", 0
-			with open(forF, 'r', newline='') as f:
+			with open(forF, 'r', encoding='utf-8', newline='') as f:
 				r=None
 				while r!="":
 					r = f.read()
@@ -675,7 +675,7 @@ def fixEmpty(forFiles, /, action='P', *, outdir=None, verbose=0, debug=False):
 	Verb('A total of',glob_ppl,'empty translations was fixes in globality')
 
 	for forF, popF in zip(forFiles, popFiles):
-		with open(popF, 'w', newline='') as f:
+		with open(popF, 'w', encoding='utf-8', newline='') as f:
 			f.write(file_cache[forF])
 fixEmpty.__doc__ = _("""\
 forFiles: List - The list of files where empty translations need to be fixed.
@@ -717,7 +717,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 		Verb('forFile:',repr(forF))
 		if not forF in file_cache.keys():
 			F, dbg = "", 0
-			with open(forF, 'r', newline='') as f:
+			with open(forF, 'r', encoding='utf-8', newline='') as f:
 				r=None
 				while r!="":
 					r = f.read()
@@ -773,7 +773,7 @@ def reorder(forFiles, /,*, reverse=False, proxy=False, outdir=None, verbose=0, d
 					xpos += len(tr_val)
 
 	for forF, popF in zip(forFiles, popFiles):
-		with open(popF, 'w', newline='') as f:
+		with open(popF, 'w', encoding='utf-8', newline='') as f:
 			f.write(file_cache[forF])
 reorder.__doc__ = _("""\
 forFiles: List - The list of files where translations need to be reordered.
@@ -867,7 +867,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			Verb('forFile:',repr(forF))
 			if not forF in file_cache.keys():
 				F, dbg = "", 0
-				with open(forF, 'r', newline='') as f:
+				with open(forF, 'r', encoding='utf-8', newline='') as f:
 					r=None
 					while r!="":
 						r = f.read()
@@ -878,7 +878,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			Verb('fromFile:',repr(fromF))
 			if not fromF in file_cache.keys():
 				F, dbg = "", 0
-				with open(fromF, 'r', newline='') as f:
+				with open(fromF, 'r', encoding='utf-8', newline='') as f:
 					r=None
 					while r!="":
 						r = f.read()
@@ -992,7 +992,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 			Verb('A total of',ppl,'translations was populate')
 			group_ppl += ppl
 			glob_ppl += ppl
-			with open(forF, 'w', newline='') as f:
+			with open(forF, 'w', encoding='utf-8', newline='') as f:
 				f.write(file_cache[forF])
 		Verb('A total of',group_ppl,'translations was populate with this group of from-files')
 
@@ -1000,7 +1000,7 @@ def populate(forFiles, *FromFiles, proxy=0, overwrite='N', outdir=None, verbose=
 		Verb('forFile:',repr(forF))
 		if not forF in file_cache.keys():
 			F, dbg = "", 0
-			with open(forF, 'r', newline='') as f:
+			with open(forF, 'r', encoding='utf-8', newline='') as f:
 				r=None
 				while r!="":
 					r = f.read()

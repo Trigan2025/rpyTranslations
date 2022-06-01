@@ -1,4 +1,4 @@
-##
+#!powershell
 $cur_dir = Get-Location
 $p_args = [Collections.Generic.List[string]]::new()
 $dbg = $false
