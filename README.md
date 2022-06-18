@@ -37,7 +37,7 @@ Note that since `common.rpy`, `options.rpy` and `screens.rpy` (at least) general
 ###### To summarize
 
 It gives something like this:  
-**generate new .rpy translation files**, **reorder**, **translate**, **reverse the reordering**, eventually **fix empty**, **check all**.
+**generate new .rpy translation files**, **reorder**, **translate**, **reverse the reordering**, **check all**, eventually **fix empty**.
 
 ##### If there are previous translation made
 
@@ -49,7 +49,7 @@ But globaly, it take at first argument the list of file you want to be populate 
 ###### To summarize
 
 It gives something like this:  
-**generate new .rpy translation files**, use the 'populate' command to **poppulate the new files with the old files**, **reorder**, **translate**, **reverse the reordering**, eventually **fix empty**, **check all**.
+**generate new .rpy translation files**, use the 'populate' command to **poppulate the new files with the old files**, **reorder**, **translate**, **reverse the reordering**, **check all**, eventually **fix empty**.
 
 ##### Also
 
@@ -66,15 +66,12 @@ However, it's also possible to make inline functions to ease (shortened) the use
 Exemple:
 ```sh
 tlFor() { L=$1;shift; while [ $# -gt 0 ]; do printf " %q" "$HOME/Documents/Ren'Py/Translation maker/game/tl/$L/$1.rpy"; shift; done; }
+# Or if you are in the 'For' directory:
+tlFor() { L=$1;shift; while [ $# -gt 0 ]; do printf " %q" "./tl/$L/$1.rpy"; shift; done; }
+
 tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
 
-sh -c -- "rpyTranslations populate --subdir ../populates `tlFor <lang> common options` `tl <GameProject> <version> <lang> common options`"
-```
-Or if you are in the 'For' directory:
-```sh
-tl() { G=$1;ver=$2;L=$3;shift;shift;shift; while [ $# -gt 0 ]; do printf " %q" "<games_abs_path>/$G/$ver/game/tl/$L/$1.rpy"; shift; done; }
-
-sh -c -- "rpyTranslations populate --subdir ../populates ./common.rpy ./options.rpy `tl <GameProject> <version> <lang> common options`"
+sh -c -- "rpyTranslations populate --subdir ../populated `tlFor <lang> common options` `tl <GameProject> <version> <lang> common options`"
 ```
 
 ### On Windows
@@ -87,11 +84,22 @@ However, it's also possible to make inline functions to ease (shortened) the use
 Exemple:
 ```powershell
 function tlFor() { $L="$($Args[0])"; $A = [Collections.Generic.List[string]]::new(); for (($i=1); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("$($HOME)\Documents\RenPy\Translation maker\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
+# Or if you are in the 'For' directory:
+function tlFor() { $L="$($Args[0])"; $A = [Collections.Generic.List[string]]::new(); for (($i=1); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($(".\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
+
 function tl() { $G="$($Args[0])";$ver="$($Args[1])";$L="$($Args[2])"; $A = [Collections.Generic.List[string]]::new(); for (($i=3); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("<games_abs_path>\$($G)\$($ver)\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
-Invoke-Expression "rpyTranslations populate -SubDir ..\populates $(tlFor <lang> common options) $(tl <GameProject> <version> <lang> common options)"
+
+Invoke-Expression "rpyTranslations populate -SubDir ..\populated $(tlFor <lang> common options) $(tl <GameProject> <version> <lang> common options)"
 ```
-Or if you are in the 'For' directory:
-```powershell
-function tl() { $G="$($Args[0])";$ver="$($Args[1])";$L="$($Args[2])"; $A = [Collections.Generic.List[string]]::new(); for (($i=3); $i -lt $Args.Count; ($i++)) { $A.add("'"+$($("<games_abs_path>\$($G)\$($ver)\game\tl\$($L)\{0}.rpy" -f "$($Args[$i])") -Replace "'","''")+"'") }; $A }
-Invoke-Expression "rpyTranslations populate -SubDir ..\populates .\common.rpy .\options.rpy $(tl <GameProject> <version> <lang> common options)"
-```
+
+## Limitations
+
+Her are a list of the **current** limitations of this script. It's of courses planed to suppress these as soon as possible, unfortunately, however, this requires a complete rewriting of the part concerning the analysis of lines *which is the central part on which the whole is based*.
+To be more explicit, the whole way the regular expressions are used needs to be changed to have something more robust and flexible. *This can take some time.*
+
+Here are they:
+
+- Logical lines for one-line python statement are not fully supported. The line need to end with a backslash '\' to continue on the next line.
+- Splited translations are not supported. You need to keep the translation a one statement.
+- Conditional instructions are not supported. Certainly the most useful of this list *(although there are alternatives with one-line python statements)* but also the one that more require the above mentioned changes.
+    Neitherless, a section as been add in the check command to output how many and where there is such conditional instructions.
