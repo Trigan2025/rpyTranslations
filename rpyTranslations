@@ -6,14 +6,21 @@ if [ "$1" == '-h' -o "$1" == '--help' ]; then
    echo "rpyTranslations (populate|fix-empty|check|diff|reorder|--help) [args] [options]"
    shift
 fi
-d=0
+d=0; parse=true
 while test $# -gt 0; do
-   if [ "$1" == '-o' -o "$1" == '--subdir' ]; then
-      args="$args $1 `printf "%q" "$2"`"
-      shift
-   elif [ "$1" == '-d' -o "$1" == '--debug' ]; then
-      args="$args $1"
-      d=1
+   if test $parse == 'true'; then
+      if [ "$1" == '--' ]; then
+         parse=false
+         args="$args --"
+      elif [ "$1" == '-o' -o "$1" == '--subdir' ]; then
+         args="$args $1 `printf "%q" "$2"`"
+         shift
+      elif [ "$1" == '-d' -o "$1" == '--debug' ]; then
+         args="$args $1"
+         d=1
+      elif test -f "$1"; then args="$args $(printf "%q" "`realpath "$1"`")"
+      else args="$args `printf "%q" "$1"`"
+      fi
    elif test -f "$1"; then args="$args $(printf "%q" "`realpath "$1"`")"
    else args="$args `printf "%q" "$1"`"
    fi

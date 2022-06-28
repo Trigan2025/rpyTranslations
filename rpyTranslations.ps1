@@ -1,7 +1,7 @@
 #!powershell
 $cur_dir = Get-Location
 $p_args = [Collections.Generic.List[string]]::new()
-$dbg = $false
+$dbg = $false; $parse = $true
 if ($Args[0] -ieq '-Help' -or $Args[0] -in $('-h','--help')) {
 	Write-Host @"
 $($MyInvocation.InvocationName) (populate|fix-empty|check|diff|reorder|--help) [args] [options]
@@ -13,18 +13,27 @@ In addition, for the '--help' command and for each options begining by '--', it 
 	$p_args.add("$($Args[0].toLower())")
 }
 for (($i = 1); $i -lt $Args.Count; ($i++)) {
-	if (Test-Path -PathType leaf -Path "$($Args[$i])") {
-		$p_args.add("$($Args[$i] | Resolve-Path)")
-	} elseif ("$($Args[$i])" -match '^-[a-zA-Z]+[a-zA-Z-]+$') {
-		$p_args.add("-$($Args[$i].toLower())")
-		if ("$($Args[$i])" -ieq "-Debug") {
-			$dbg = $true
+	if ($parse) {
+		if ("$($Args[$i])" -eq '--') {
+			$parse = $false
+			$p_args.add("--")
+		} elseif (Test-Path -PathType leaf -Path "$($Args[$i])") {
+			$p_args.add("$($Args[$i] | Resolve-Path)")
+		} elseif ("$($Args[$i])" -match '^-[a-zA-Z]+[a-zA-Z-]+$') {
+			$p_args.add("-$($Args[$i].toLower())")
+			if ("$($Args[$i])" -ieq "-Debug") {
+				$dbg = $true
+			}
+		} else {
+			$p_args.add("$($Args[$i])")
+			if ($Args[$i] -in $('-d','--debug')) {
+				$dbg = $true
+			}
 		}
+	} elseif (Test-Path -PathType leaf -Path "$($Args[$i])") {
+		$p_args.add("$($Args[$i] | Resolve-Path)")
 	} else {
 		$p_args.add("$($Args[$i])")
-		if ($Args[$i] -in $('-d','--debug')) {
-			$dbg = $true
-		}
 	}
 }
 Set-Location -Path "<path_to_rpyTranslations_dir>"#ex: $HOME\Documents\Python3

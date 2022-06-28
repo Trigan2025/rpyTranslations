@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
-import sys, os, os.path, re, locale, gettext
+import sys, os, os.path, re, gettext
 from unicodedata import normalize as NZ
 from textwrap import dedent
 __all__=['populate','fixEmpty','check','reorder','diff']
 
+def getLocale():
+   if os.name == 'nt':
+      from locale import windows_locale
+      from ctypes import windll
+      l = windows_locale.get(windll.kernel32.GetThreadUILanguage(),None)
+      if not l is None: return l
+   else:
+      for L in ['LC_ALL','LANG','LANGUAGE']:
+         l = os.getenv(L)
+         if not (l is None or l in ['C','POSIX']): return l.split('@')[0].split('.')[0]
+   return 'en'
 TR = None
-if os.name == 'nt':
-	from ctypes import windll
-	LANG = locale.windows_locale.get(windll.kernel32.GetThreadUILanguage(),'')
-else: LANG = locale.getdefaultlocale()[0]
+LANG = getLocale()
 LANG=(LANG,LANG.split('_')[0])
 if os.path.isdir('./locale'):
 	TR = gettext.translation('rpyTranslations', localedir='./locale', languages=LANG, fallback=True)
@@ -52,8 +60,8 @@ reTDQ = r'"""(\\"|""?[^"]|[^"])*"""'
 reTSQ = r"'''(\\'|''?[^']|[^'])*'''"
 reQ = r'('+reTDQ+r'|'+reTSQ+r'|'+reDQ+r'|'+reSQ+r')'
 reP = r'(?P<p>_p\()?{Q}(?(p)\))'.format(Q=reQ)
-reN_old = r'(?P<dID>(?P<old_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*))( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
-reN_new = r'(?P<new_dID>(?P<new_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*))( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(SQ=reSQ,DQ=reDQ)
+reN_old = r'(?P<dID>(?P<old_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)(?P<idA>( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?))'.format(SQ=reSQ,DQ=reDQ)
+reN_new = r'(?P<new_dID>(?P<new_NID>{SQ}|{DQ}|[a-zA-Z_]+[a-zA-Z_0-9]*)(?P<new_idA>( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?))'.format(SQ=reSQ,DQ=reDQ)
 rePy = r'\$(\\\r?\n|[^\n])*'# does not support logical line for '(', '{' and '[' and reQ
 rePass = r'pass( *#[^\n]*|\r?\n)'
 reRID = r'# (?P<file>[^;:\\/]+(/[^;:\\/]+)*\.rpy):(?P<line>0|[1-9][0-9]*)'
@@ -950,7 +958,7 @@ verbose: Integer - Indicates the level of verbosity, 0 to deactivate.
 debug: Booleen - Active or not the debuging.
 """)
 
-def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='N', outdir=None, verbose=0, debug=False):
+def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, proxyWarn=True, fromNID=False, overwrite='N', outdir=None, verbose=0, debug=False):
 	Verb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=1 else None
 	xVerb = lambda *args, **kwargs: print(*args, **kwargs) if verbose>=2 else None
 	Debug = lambda *args, **kwargs: print(*args, **kwargs) if debug else None
@@ -960,6 +968,10 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('bulk'), code=2)
 	if not proxy in (0,1,2,3,4):
 		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be an integer between 0 and 4 (includes)").format('proxy'), code=2)
+	if not isinstance(proxyWarn, bool):
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('proxyWarn'), code=2)
+	if not isinstance(fromNID, bool):
+		Throw(TypeError,_("Invalide argument:"),_("{} parameter should be of booleen type").format('fromNID'), code=2)
 	if not overwrite in ('N','A','F'):
 		Throw(ValueError,_("Invalide argument:"),_("{} parameter should be N for no, A for ask, or F for force").format('override'), code=2)
 	popFiles = []
@@ -1006,8 +1018,22 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	RE_x = re.compile(reFrm)
+	RE_dID = re.compile(reN_new)
 	glob_ppl, group_ppl = 0, 0
 	file_cache = {}
+	def get_dID(M, M_from):
+		dID = None if M.group('new_dID') is None and M.group('dID') is None else M.group('dID') if M.group('new_dID') is None else M.group('new_dID')
+		if dID is None: dID = ""
+		else:
+			_dID = RE_dID.search(dID)
+			strID = not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), _dID.group('new_NID')) is None
+			if fromNID and strID and not M_from.group('new_dID') is None:
+				f_strID = not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), M_from.group('new_NID')) is None
+				if f_strID:
+					dID = RE_dID.sub(r'{NID}\g<new_idA>'.format(NID=M_from.group('new_NID')), dID)+" "
+				else: dID += " "
+			else: dID += " "
+		return dID
 	def _find(With, T, M, into):
 		M_from, m_from = None, With.search(file_cache[into])
 		Debug("Debug: T=",T," m_from:",repr(m_from))
@@ -1099,7 +1125,7 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 						Debug("Debug: Proxy 1")
 						by_proxy = True
 						if T == 1 and not M.group('old_NID') is None:
-							reNID_old = r'(?P<old_NID>{NID})( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?'.format(NID=M.group('old_NID'))
+							reNID_old = r'(?P<old_NID>{NID}( +[a-zA-Z_]+[a-zA-Z_0-9]*)*( +@( +[a-zA-Z_]+[a-zA-Z_0-9]*)+)?)'.format(NID=M.group('old_NID'))
 							_RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{old})'.format(N=reNID_old, old=re.escape(M.group('old_str'))), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 							TID = M.group('TID')
 							m_from = _RE_dialog.search(file_cache[fromF])
@@ -1117,7 +1143,7 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 								while not m_from is None:# get the eventual latest
 									if RE_pass.match(m_from.group('new')) is None: M_from = m_from
 									m_from = _RE_dialog.search(file_cache[fromF], m_from.end())
-								if m_from is None:
+								if M_from is None:
 									T_from = 0
 									m_from = _RE_string.search(file_cache[fromF])
 									while not m_from is None:# get the eventual latest
@@ -1144,7 +1170,7 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 					M_from = RE_dialog.search(file_cache[fromF], M_from.start())
 					Debug("Debug: M is",repr(M),"\n  M_from is",repr(M_from))
 				A = None
-				if (not by_proxy and not Pass and not M.group('new_str') in ('""', M_from.group('new_str')) and overwrite == 'A') or (by_proxy and (Pass or M.group('new_str') == '""')):
+				if (not by_proxy and not Pass and not M.group('new_str') in ('""', M_from.group('new_str')) and overwrite == 'A') or (by_proxy and proxyWarn and (Pass or M.group('new_str') == '""')):
 					pp = len(M.group(1))-1
 					sPy = ""
 					if T_from == 1:
@@ -1184,7 +1210,7 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 						if A.upper() in ('Y','YES'): A='P' if by_proxy else 'Y'
 						elif A.upper() in ('N','NO'): A='N'
 						else: A=None
-				if ((not by_proxy or A == 'P') and (Pass or M.group('new_str') == '""')) or (not by_proxy and (M.group('new_str') != M_from.group('new_str') and (overwrite == 'F' or A == 'Y'))):
+				if ((not by_proxy or not proxyWarn or A == 'P') and (Pass or M.group('new_str') == '""')) or (not by_proxy and (M.group('new_str') != M_from.group('new_str') and (overwrite == 'F' or A == 'Y'))):
 					pp = len(M.group(1))-1
 					nl = re.search(r'(\r?\n)([ \t]+){}'.format(re.escape(M.group('new'))), M.group()[pp:])
 					nl,ind = nl.group(1),nl.group(2)
@@ -1201,16 +1227,20 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, overwrite='
 							mPy = RE_Py.search(Py, mPy.end())
 
 					if not Pass:
-						if T_from == 1:
-							dID = "" if M_from.group('new_dID') is None else M_from.group('new_dID')+" "
+						if (T, T_from) == (1, 1):
+							dID = get_dID(M, M_from)
 							xF = file_cache[forF][M.start()+pp:].replace(M.group('new'), sPy+dID+M_from.group('new_str'), 1)
 						else:
 							xF = file_cache[forF][M.start()+pp:].replace(M.group('new_str'), M_from.group('new_str'), 1)
 					else:
 						Debug("<<< M old is Pass\n<<< From new is",repr(M_from.group('new_str')))
+						if fromNID and T_from == 1:
+							dID = get_dID(M, M_from)
+						else:
+							dID = "" if M.group('dID') is None else M.group('dID')+" "
 						pArgs = '' if M.group('old_pArgs') is None else M.group('old_pArgs')
 
-						xF = file_cache[forF][M.start()+pp:].replace(M.group('new'), sPy+M.group('old').replace(M.group('old_str'), M_from.group('new_str'), 1)+pArgs+nl, 1)
+						xF = file_cache[forF][M.start()+pp:].replace(M.group('new'), sPy+dID+M_from.group('new_str')+pArgs+nl, 1)
 					xVerb('Change translation from',repr(M.group('new_str') if not Pass else M.group('old_str')),'\tto',repr(M_from.group('new_str')))
 					file_cache[forF] = file_cache[forF][:M.start()+pp]+xF
 					ppl += 1
@@ -1253,6 +1283,10 @@ bunch: Booleen - Indicates if, when a translation is not found, it should be sea
        in the current fromFiles group.
 bulk: Booleen - Indicates if few files should be populate from many (or many from few).
 proxy: Integer - From 0 to 4 (includes) to indicate a level of proxy, 0 to diactivate, 4 made it long.
+proxyWarn: Booleen - Indicates whether an asking is made or not when attempting to populate empty
+           translation with proxied translation.
+fromNID: Booleen - Indicates whether the identifiant name’ string is prefered to be from 'fromFiles' or from
+         'forFiles'.
 overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force. (verbose is recommand with 'A')
 outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None
         to save inplace.
@@ -1282,7 +1316,26 @@ if __name__ == '__main__':
 		  See the specific help of these commands for more information.
 		options
 		  They generaly can be put everywhere in the argument realm of command.
+		  However, though they can be put in random order, they are treated by order of precedence and each
+		   option can be specified only one times.
+		  The precedence for an option is in right to left order (so, short version of options are always last).
+		  Exemple, for `-% n, --multi n, --lists n`, the precedence is:
+		      `--lists n` > `--multi n` > `-% n`
+		  So if we have this: `-% 2 --multi 5 --lists 3`, only `--list 3` will be treated and retained and the
+		   remaining will stay as is.
+		  Some commands have inter-option precedences. This means that each options will be treated but only
+		   the one with the greater precedence will be retained (see the specific helps for more details).
+
 		  Though commands has their own set of options, here are some general options below:
+		  --
+		      This option allow to indicate where to stop interpreting options.
+		      Exemple, in the following: `-d -- -v`, -d will activates the debug but -v will activates nothing
+		       and stay as -v.
+		  -:
+		      This option should be directly followed (without spaces) by any characters.
+		      These characters should each correspond to short version of options that do not requiered
+		       arguments.
+		      Exemple: `-:vd` correponding to `-v -d`.
 		  -v [lvl], --verbose [lvl]
 		      Activate the verbosity during the process.
 		      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.
@@ -1305,7 +1358,7 @@ if __name__ == '__main__':
 		options:
 		  -h, --help
 		      Show this specific help for the 'populate' command and exit.
-		  --bunch
+		  -b, --bunch
 		      Indicates if, when a translation is not found, it should be searched for in other files in the
 		       current from-files group.
 		  --bulk [n]
@@ -1326,7 +1379,7 @@ if __name__ == '__main__':
 		  -a, --ask
 		      If put, a prompt will ask to confirm or no a replacement of translation (only for non-empty).
 		      It’s recommand to use the verbose option with that, so you can know for what file the asking is.
-		  -f, --force, --overwrite
+		  -F, --force, --overwrite
 		      Activate the replacement of existing translations.
 		  --proxy lvl
 		      If a translation is not found with the normals methods, so this option allow to use other methods
@@ -1340,17 +1393,51 @@ if __name__ == '__main__':
 		               as 'strings', so 'strings' can now search in 'dialogs' translations.
 		          4   The strings are compared to get a least a correspondance of 90%.
 		              Please note that this can be a very long process.
+		  -W, --no-proxy-warn
+		      When attempting to populate empty translation with proxied translation, an asking is made.
+		      This option allow to bypass this asking.
+		  --proxy-y lvl
+		      This option is the same as --proxy but with effect of --no-proxy-warn in addition.
+		  -N, --from-nID
+		      By default, the identifiant name’ string are takes from for_files, use this option if rather
+		       prefere it’s to be from from_files.
 		  -v [lvl], --verbose [lvl]
 		      Activate the verbosity during the process.
 		      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.
 		  -d, --debug
 		      Activate the debug printings during the process. The output can be huge.
 		* Please note that --ask take precedence over --force.
+		* Please note that --proxy take precedence over --proxy-y (though the side effect of this one is kept)
+		   and that --no-proxy-warn had no effect if --proxy-y is use too.
 
 		Please note that `populate --bulk 2 ./common.rpy ./init.rpy -% 1 ../from/common.rpy ../from/init.rpy`
 		 result to the same as `populate --bunch ./common.rpy ./init.rpy ../from/common.rpy ../from/init.rpy`
 		 but are less efficiency.
-		""")))
+		""")),"   "+'-'*104,dedent(_("""
+		Additional informations:
+
+		- About the --ask option:
+		    The patern to show askings is the following:
+		      `
+		      For: [for: old dID]
+		      	<for: old string>
+		      Attempt to replace: [for: new dID]
+		      	<for: new string>
+		      With: [with: dID]
+		      	<with: string>
+		      `
+		    The presence of dID parts depends of the translation’ kind (string or dialog translation).
+		    Only dialog translations can contain a dID, and if one doesn't have one, it will be showed as {0}.
+		    It’s important to note that the dID contains two parts, the first part is a NID (name identifiant)
+		     and the second is image arguments.
+		    As mentioned above, only the NID can be affect by the --from-nID option, this means that first, the
+		     dID is get in the following order of precedence:
+		      [for: new dID] > [for: old dID]
+		     and then, if the --from-nID option is use, the NID can be take from the [with: dID] if:
+		      1) the previously get dID is not {0} and it NID is of string type
+		      2) this [with: dID] is not {0} and it NID is of string type
+		     otherwise, the NID from the previously get dID is keep.
+		""").format(repr(None))), sep='\n')
 		if len(sys.argv) != 2:
 			Error(_("Invalide argument:"),_("help commands do not accept any argument or option."))
 		exit()
@@ -1490,211 +1577,122 @@ if __name__ == '__main__':
 		if len(sys.argv) != 2:
 			Error(_("Invalide argument:"),_("help commands do not accept any argument or option."))
 		exit()
-	args,kargs = [],{}
-	if '--verbose' in sys.argv:
-		verbose = 1
-		try:
-			verbose = int(sys.argv[sys.argv.index('--verbose')+1])
-			sys.argv.pop(sys.argv.index('--verbose')+1)
-		except: pass
-		sys.argv.remove('--verbose')
-	elif '-v' in sys.argv:
-		verbose = 1
-		try:
-			verbose = int(sys.argv[sys.argv.index('-v')+1])
-			sys.argv.pop(sys.argv.index('-v')+1)
-		except: pass
-		sys.argv.remove('-v')
-	if '--debug' in sys.argv:
-		dbg = True
-		sys.argv.remove('--debug')
-	elif '-d' in sys.argv:
-		dbg = True
-		sys.argv.remove('-d')
-	if dbg: print("Debug: args =",sys.argv)
+	argv, opt_i,stopO, args,kargs = [], 0,-1, [],{}
+	def get_opt(opts, var, val=None, arg_t=None, err=False):
+		global argv, opt_i, stopO
+		for opt in opts:
+			if opt in argv:
+				pos = argv.index(opt)
+				if stopO < 0 or pos < stopO:
+					if not val is None:
+						globals().update([(var, val)])
+					if not arg_t is None:
+						try:
+							v = argv[pos+1]
+							v = arg_t(v)
+							argv.pop(pos+1)
+							globals().update([(var, v)])
+							if stopO > 1: stopO -= 2
+						except IndexError as e:
+							if err:
+								Error(_("Missing argument:"),_("{} option required an argument.").format(opt))
+						except:
+							if err:
+								if arg_t == int:
+									Error(_("Invalide argument:"),_("{} option should be an integer, give:").format(opt),repr(v))
+							if stopO > 0: stopO -= 1
+					elif stopO > 0: stopO -= 1
+					return argv.pop(pos)
+	for v in sys.argv[1:]:
+		if v.startswith('-:'):
+			for a in v[2:]: argv.append('-'+a)
+		else: argv.append(v)
+	if '--' in argv:
+		stopO = argv.index('--')
+		argv.remove('--')
+	get_opt(['--verbose','-v'], 'verbose', 1, int)
+	get_opt(['--debug','-d'], 'dbg', True)
+	if dbg: print("Debug: args =",argv)
 	if Cmd == 'populate':
-		O, D, N, Bc, Bk = 'N', None, 2, False, 0
-		if '--bunch' in sys.argv:
-			Bc = True
-			sys.argv.remove('--bunch')
-		if '--overwrite' in sys.argv:
-			O = 'F'
-			sys.argv.remove('--overwrite')
-		elif '--force' in sys.argv:
-			O = 'F'
-			sys.argv.remove('--force')
-		elif '-f' in sys.argv:
-			O = 'F'
-			sys.argv.remove('-f')
-		if '--ask' in sys.argv:
-			O = 'A'
-			sys.argv.remove('--ask')
-		elif '-a' in sys.argv:
-			O = 'A'
-			sys.argv.remove('-a')
-		if '--subdir' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('--subdir')+1)
-			sys.argv.remove('--subdir')
-		elif '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		if '--bulk' in sys.argv:
-			N = Bk = 1
-			try:
-				Bk = int(sys.argv[sys.argv.index('--bulk')+1])
-				sys.argv.pop(sys.argv.index('--bulk')+1)
-			except: pass
-			sys.argv.remove('--bulk')
-		if '--lists' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--lists')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--lists'),N)
-			sys.argv.remove('--lists')
-		elif '--multi' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--multi')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--multi'),N)
-			sys.argv.remove('--multi')
-		elif '-%' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('-%')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
-			sys.argv.remove('-%')
-		if '--proxy' in sys.argv:
-			proxy = sys.argv.pop(sys.argv.index('--proxy')+1)
-			try: proxy = int(proxy)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--proxy'),proxy)
-			sys.argv.remove('--proxy')
-		else: proxy = 0
-		argc = len(sys.argv)-1
+		O, D, N, Bc, Bk, fID, proxy, pxW = 'N', None, 2, False, 0, False, 0, True
+		get_opt(['--bunch','-b'], 'Bc', True)
+		r = get_opt(['--overwrite','--force','-F','-f'], 'O', 'F')
+		if r == '-f':
+			print("Warning: -f option of populate is now deprecated in favor -F")
+			input("<press ENTER to continue>")
+		get_opt(['--ask','-a'], 'O', 'A')
+		get_opt(['--subdir','-o'], 'D', arg_t=str)
+		get_opt(['--bulk'], 'Bk', 1, int)
+		if Bk != 0: N = 1
+		get_opt(['--lists','--multi','-%'], 'N', arg_t=int, err=True)
+		r = get_opt(['--proxy-y'], 'proxy', arg_t=int, err=True)
+		if r != None: pxW = False
+		get_opt(['--proxy'], 'proxy', arg_t=int, err=True)
+		get_opt(['--no-proxy-warn','-W'], 'pxW', False)
+		get_opt(['--from-nID','-N'], 'fID', True)
+		argc = len(argv)
 		if Bk < 0:
 			Error(_("Invalide argument:"),_("{} option should be an absolute integer").format('--bulk'), code=2)
 		if Bk == 0:
 			if argc%N != 0:
 				Error(_("The file pair lists need to have equal length, {N} gived.", argc).format(N=argc))
 			N = argc//N
-			files1 = sys.argv[1:N+1]
+			files1 = argv[:N]
 		else:
-			files1 = sys.argv[1:Bk+1]
+			files1 = argv[:Bk]
 			argc -= Bk
 			if argc%N != 0:
 				Error(_("The file pair lists need to have equal length, {N} gived.", argc).format(N=argc))
 			N = argc//N
 		files2 = []
-		for i,f in enumerate(sys.argv[1+len(files1):]):
+		for i,f in enumerate(argv[len(files1):]):
 			if i%N == 0: files2.append([f])
 			else: files2[-1].append(f)
 		Bk = Bk != 0
-		if dbg: print(f"Debug: populate({files1}, {files2}, bunch={Bc}, bulk={Bk}, proxy={proxy}, overwrite={O!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
-		args,kargs = [files1,*files2], {'bunch':Bc,'bulk':Bk,'proxy':proxy,'overwrite':O,'outdir':D, 'verbose':verbose,'debug':dbg}
+		if dbg: print(f"Debug: populate({files1}, {files2}, bunch={Bc}, bulk={Bk}, proxy={proxy}, proxyWarn={pxW}, fromNID={fID}, overwrite={O!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
+		args,kargs = [files1,*files2], {'bunch':Bc,'bulk':Bk,'proxy':proxy,'proxyWarn':pxW,'fromNID':fID, 'overwrite':O,'outdir':D,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'fix-empty':
 		A, D = 'P', None
-		if '--action' in sys.argv:
-			A = sys.argv.pop(sys.argv.index('--action')+1)
-			sys.argv.remove('--action')
-		elif '-a' in sys.argv:
-			A = sys.argv.pop(sys.argv.index('-a')+1)
-			sys.argv.remove('-a')
-		if '--subdir' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('--subdir')+1)
-			sys.argv.remove('--subdir')
-		elif '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		files = sys.argv[1:]
+		get_opt(['--action','-a'], 'A', arg_t=str)
+		get_opt(['--subdir','-o'], 'D', arg_t=str)
+		files = argv[:]
 		if dbg: print(f"Debug: fixEmpty({files}, action={A!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'action':A,'outdir':D,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'check':
 		UnT, F, Wr = 1, False, False
-		if '--empty' in sys.argv:
-			UnT = 1
-			sys.argv.remove('--empty')
-		elif '-e' in sys.argv:
-			UnT = 1
-			sys.argv.remove('-e')
-		if '--not-translate' in sys.argv:
-			UnT = 2
-			sys.argv.remove('--not-translate')
-		elif '-p' in sys.argv:
-			UnT = 2
-			sys.argv.remove('-p')
-		if '--where' in sys.argv:
-			Wr = True
-			sys.argv.remove('--where')
-		if '--skip-empty' in sys.argv:
-			UnT = 0
-			sys.argv.remove('--skip-empty')
-		elif '-n' in sys.argv:
-			UnT = 0
-			sys.argv.remove('-n')
-		if '--format' in sys.argv:
-			F = True
-			sys.argv.remove('--format')
-		elif '-f' in sys.argv:
-			F = True
-			sys.argv.remove('-f')
-		files = sys.argv[1:]
+		get_opt(['--empty','-e'], 'UnT', 1)
+		get_opt(['--not-translate','-p'], 'UnT', 2)
+		get_opt(['--where'], 'Wr', True)
+		get_opt(['--skip-empty','-n'], 'UnT', 0)
+		get_opt(['--format','-f'], 'F', True)
+		files = argv[:]
 		if dbg: print(f"Debug: check({files}, untranslated={UnT}, where={Wr}, formats={F!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'untranslated':UnT,'where':Wr,'formats':F,'verbose':verbose,'debug':dbg}
 	elif Cmd == 'diff':
 		N, nP, Wt, refL, trID = 2, True, False, False, False
-		if '--lists' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--lists')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format(''),N)
-			sys.argv.remove('--lists')
-		elif '--multi' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('--multi')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('--multi'),N)
-			sys.argv.remove('--multi')
-		elif '-%' in sys.argv:
-			N = sys.argv.pop(sys.argv.index('-%')+1)
-			try: N = int(N)
-			except: Error(_("Invalide argument:"),_("{} option should be an integer, give").format('-%'),N)
-			sys.argv.remove('-%')
-		if '--ignore-newpart' in sys.argv:
-			nP = False
-			sys.argv.remove('--ignore-newpart')
-		if '--what' in sys.argv:
-			Wt = True
-			sys.argv.remove('--what')
-		if '--reflines' in sys.argv:
-			refL = True
-			sys.argv.remove('--reflines')
-		if '--tr-ids' in sys.argv:
-			trID = True
-			sys.argv.remove('--tr-ids')
-		argc = len(sys.argv)-1
+		get_opt(['--lists','--multi','-%'], 'N', arg_t=int, err=True)
+		get_opt(['--ignore-newpart'], 'nP', False)
+		get_opt(['--what'], 'Wt', True)
+		get_opt(['--reflines'], 'refL', True)
+		get_opt(['--tr-ids'], 'trID', True)
+		argc = len(argv)
 		if argc%N != 0:
 			Error(_("The file pair lists need to have equal length, {N} gived.", argc).format(N=argc))
 		N = argc//N
-		files1 = sys.argv[1:N+1]
+		files1 = argv[:N]
 		files2 = []
-		for i,f in enumerate(sys.argv[1+N:]):
+		for i,f in enumerate(argv[N:]):
 			if i%N == 0: files2.append([f])
 			else: files2[-1].append(f)
 		if dbg: print(f"Debug: diff({files1}, {files2}, newpart={nP}, what={Wt}, reflines={refL}, trID={trID}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files1,*files2], {'newpart':nP,'what':Wt,'reflines':refL,'trID':trID, 'verbose':verbose,'debug':dbg}
 	elif Cmd == 'reorder':
 		D, R, P = None, False, False
-		if '--subdir' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('--subdir')+1)
-			sys.argv.remove('--subdir')
-		elif '-o' in sys.argv:
-			D = sys.argv.pop(sys.argv.index('-o')+1)
-			sys.argv.remove('-o')
-		if '--reverse' in sys.argv:
-			R = True
-			sys.argv.remove('--reverse')
-		elif '-r' in sys.argv:
-			R = True
-			sys.argv.remove('-r')
-		if '--proxy' in sys.argv:
-			P = True
-			sys.argv.remove('--proxy')
-		files = sys.argv[1:]
-		if dbg: print(f"Debug: reorder({files}, reverse={R!r}, proxy={P!r}, outdir={D!r}, verbose={verbose}, debug={dbg})")
+		get_opt(['--subdir','-o'], 'D', arg_t=str)
+		get_opt(['--reverse','-r'], 'R', True)
+		get_opt(['--proxy'], 'P', True)
+		files = argv[:]
+		if dbg: print(f"Debug: reorder({files}, reverse={R}, proxy={P}, outdir={D!r}, verbose={verbose}, debug={dbg})")
 		args,kargs = [files], {'outdir':D,'reverse':R,'proxy':P,'verbose':verbose,'debug':dbg}
 	# print("Debug: STOP")
 	# exit()

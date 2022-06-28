@@ -9,56 +9,55 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Project-Id-Version: 1.0\n"
-"POT-Creation-Date: 2022-06-19 00:56+0200\n"
-"PO-Revision-Date: 2022-06-19 01:16+0200\n"
+"POT-Creation-Date: 2022-06-27 21:22+0200\n"
+"PO-Revision-Date: 2022-06-28 02:55+0200\n"
 "Last-Translator: TRIGAN <trigan2025@outlook.com>\n"
 "Language-Team: none\n"
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=n <= 1 ? 0 : 1;\n"
 
-#: rpyTranslations.py:102
+#: rpyTranslations.py:110
 msgid ""
 "This function try to estimate the proxymity between two strings.\n"
 "Please note that this can hardly be precise and error-free.\n"
 msgstr ""
-"Cette fonction essaie d’estimer la proximité entre deux chaînes.\n"
+"Cette fonction essaie d’estimer la proximité entre deux chaines.\n"
 "Veuillez noter que ceci peut difficilement être précis et exempt d’erreur.\n"
 
-#: rpyTranslations.py:111 rpyTranslations.py:113 rpyTranslations.py:115
-#: rpyTranslations.py:117 rpyTranslations.py:540 rpyTranslations.py:542
-#: rpyTranslations.py:544 rpyTranslations.py:754 rpyTranslations.py:859
-#: rpyTranslations.py:861 rpyTranslations.py:958 rpyTranslations.py:960
-#: rpyTranslations.py:962 rpyTranslations.py:964 rpyTranslations.py:1268
-#: rpyTranslations.py:1295 rpyTranslations.py:1355 rpyTranslations.py:1385
-#: rpyTranslations.py:1419 rpyTranslations.py:1454 rpyTranslations.py:1491
-#: rpyTranslations.py:1551 rpyTranslations.py:1556 rpyTranslations.py:1561
-#: rpyTranslations.py:1566 rpyTranslations.py:1571 rpyTranslations.py:1644
-#: rpyTranslations.py:1649 rpyTranslations.py:1654
+#: rpyTranslations.py:119 rpyTranslations.py:121 rpyTranslations.py:123
+#: rpyTranslations.py:125 rpyTranslations.py:548 rpyTranslations.py:550
+#: rpyTranslations.py:552 rpyTranslations.py:762 rpyTranslations.py:867
+#: rpyTranslations.py:869 rpyTranslations.py:966 rpyTranslations.py:968
+#: rpyTranslations.py:970 rpyTranslations.py:972 rpyTranslations.py:974
+#: rpyTranslations.py:976 rpyTranslations.py:1302 rpyTranslations.py:1348
+#: rpyTranslations.py:1442 rpyTranslations.py:1472 rpyTranslations.py:1506
+#: rpyTranslations.py:1541 rpyTranslations.py:1578 rpyTranslations.py:1602
+#: rpyTranslations.py:1635
 msgid "Invalide argument:"
 msgstr "Argument invalide :"
 
-#: rpyTranslations.py:111 rpyTranslations.py:113 rpyTranslations.py:115
-#: rpyTranslations.py:117 rpyTranslations.py:542 rpyTranslations.py:544
-#: rpyTranslations.py:859 rpyTranslations.py:861 rpyTranslations.py:958
-#: rpyTranslations.py:960
+#: rpyTranslations.py:119 rpyTranslations.py:121 rpyTranslations.py:123
+#: rpyTranslations.py:125 rpyTranslations.py:550 rpyTranslations.py:552
+#: rpyTranslations.py:867 rpyTranslations.py:869 rpyTranslations.py:966
+#: rpyTranslations.py:968 rpyTranslations.py:972 rpyTranslations.py:974
 msgid "{} parameter should be of booleen type"
 msgstr "le paramètre {} doit être de type booléen"
 
-#: rpyTranslations.py:120 rpyTranslations.py:990
+#: rpyTranslations.py:128 rpyTranslations.py:1002
 msgid "The length of both list of files need to be equal"
 msgstr "La longueur des deux listes de fichiers doit être égale"
 
-#: rpyTranslations.py:123 rpyTranslations.py:125 rpyTranslations.py:547
-#: rpyTranslations.py:758 rpyTranslations.py:865 rpyTranslations.py:971
-#: rpyTranslations.py:983 rpyTranslations.py:993 rpyTranslations.py:995
+#: rpyTranslations.py:131 rpyTranslations.py:133 rpyTranslations.py:555
+#: rpyTranslations.py:766 rpyTranslations.py:873 rpyTranslations.py:983
+#: rpyTranslations.py:995 rpyTranslations.py:1005 rpyTranslations.py:1007
 msgid "doen’t exist or is not a file"
 msgstr "n’existe pas ou n’est pas un fichier"
 
-#: rpyTranslations.py:127 rpyTranslations.py:985 rpyTranslations.py:997
+#: rpyTranslations.py:135 rpyTranslations.py:997 rpyTranslations.py:1009
 msgid "Both list of files need to have their files different"
 msgstr "Les deux listes de fichiers doivent avoir des fichiers différents"
 
-#: rpyTranslations.py:524
+#: rpyTranslations.py:532
 # wide 110
 msgid ""
 "forFiles: List - The list of files where differences of translation need to be compared.\n"
@@ -79,16 +78,16 @@ msgstr ""
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
-#: rpyTranslations.py:540
+#: rpyTranslations.py:548
 msgid "{} parameter should be 1 for empty, 2 for pass, or 0 to deactivate"
 msgstr "le paramètre {} doit être 1 pour vide, 2 pour pass, ou 0 pour désactiver"
 
-#: rpyTranslations.py:548 rpyTranslations.py:764 rpyTranslations.py:767
-#: rpyTranslations.py:871 rpyTranslations.py:874
+#: rpyTranslations.py:556 rpyTranslations.py:772 rpyTranslations.py:775
+#: rpyTranslations.py:879 rpyTranslations.py:882
 msgid "All files need to be different"
 msgstr "Tous les fichiers doivent être différents"
 
-#: rpyTranslations.py:739
+#: rpyTranslations.py:747
 # wide 110
 msgid ""
 "forFiles: List - The list of files where translations need to be checked.\n"
@@ -108,11 +107,11 @@ msgstr ""
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
-#: rpyTranslations.py:754
+#: rpyTranslations.py:762
 msgid "{} parameter should be "
 msgstr "le paramètre {} doit être "
 
-#: rpyTranslations.py:844
+#: rpyTranslations.py:852
 # wide 110
 msgid ""
 "forFiles: List - The list of files where empty translations need to be fixed.\n"
@@ -132,7 +131,7 @@ msgstr ""
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
-#: rpyTranslations.py:942
+#: rpyTranslations.py:950
 # wide 110
 msgid ""
 "forFiles: List - The list of files where translations need to be reordered.\n"
@@ -154,19 +153,19 @@ msgstr ""
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage.\n"
 
-#: rpyTranslations.py:962
+#: rpyTranslations.py:970
 msgid "{} parameter should be an integer between 0 and 4 (includes)"
 msgstr "le paramètre {} doit être un nombre entier compris entre 0 et 4 (inclus)"
 
-#: rpyTranslations.py:964
+#: rpyTranslations.py:976
 msgid "{} parameter should be N for no, A for ask, or F for force"
 msgstr "le paramètre {} doit être N pour non, A pour demander ou F pour force"
 
-#: rpyTranslations.py:980
+#: rpyTranslations.py:992
 msgid "The length of each list of files need to be equal"
 msgstr "La longueur de chaque liste de fichiers doit être égale"
 
-#: rpyTranslations.py:1173
+#: rpyTranslations.py:1199
 #, python-brace-format
 msgid ""
 "For: {N_old}\n"
@@ -183,7 +182,7 @@ msgstr ""
 "Avec: {N_From}\n"
 "\t{From}"
 
-#: rpyTranslations.py:1175
+#: rpyTranslations.py:1201
 #, python-brace-format
 msgid ""
 "For: {N_old}\n"
@@ -200,7 +199,7 @@ msgstr ""
 "Avec:\n"
 "\t{From}"
 
-#: rpyTranslations.py:1178
+#: rpyTranslations.py:1204
 #, python-brace-format
 msgid ""
 "For:\n"
@@ -217,7 +216,7 @@ msgstr ""
 "Avec: {N_From}\n"
 "\t{From}"
 
-#: rpyTranslations.py:1180
+#: rpyTranslations.py:1206
 #, python-brace-format
 msgid ""
 "For:\n"
@@ -234,19 +233,19 @@ msgstr ""
 "Avec:\n"
 "\t{From}"
 
-#: rpyTranslations.py:1181
+#: rpyTranslations.py:1207
 msgid "Warning:"
 msgstr "Avertissement :"
 
-#: rpyTranslations.py:1181
+#: rpyTranslations.py:1207
 msgid "Please note that the 'With' was found by proxy."
 msgstr "Veuillez noter que le 'Avec' a été trouvé par proxy."
 
-#: rpyTranslations.py:1183
+#: rpyTranslations.py:1209
 msgid "Proceed?"
 msgstr "Procéder ?"
 
-#: rpyTranslations.py:1249
+#: rpyTranslations.py:1279
 # wide 110
 msgid ""
 "forFiles: List - The list of files that need to be populated.\n"
@@ -255,6 +254,10 @@ msgid ""
 "       in the current fromFiles group.\n"
 "bulk: Booleen - Indicates if few files should be populate from many (or many from few).\n"
 "proxy: Integer - From 0 to 4 (includes) to indicate a level of proxy, 0 to diactivate, 4 made it long.\n"
+"proxyWarn: Booleen - Indicates whether an asking is made or not when attempting to populate empty\n"
+"           translation with proxied translation.\n"
+"fromNID: Booleen - Indicates whether the identifiant name’ string is prefered to be from 'fromFiles' or from\n"
+"         'forFiles'.\n"
 "overwrite: Char - Should be: 'N' for no, 'A' for ask, or 'F' for force. (verbose is recommand with 'A')\n"
 "outdir: String - A path relative from the 'forFiles' paths to indicate where to save the result or None\n"
 "        to save inplace.\n"
@@ -264,23 +267,27 @@ msgstr ""
 "forFiles: Liste - Liste des fichiers qui doivent être peuplés.\n"
 "FromFiles: Liste,... - Successions de liste de fichiers d’où sont obtenu les traductions.\n"
 "bunch: Booleen - Indique si, lorsqu’une traduction n’est pas trouvée, elle doit être recherchée dans les\n"
-"        autres fichiers du groupe fromFiles actif.\n"
+"       autres fichiers du groupe fromFiles actif.\n"
 "bulk: Booléen - Indique si quelques fichiers doivent être remplis à partir de plusieurs (ou plusieurs à\n"
 "       partir de quelque-uns).\n"
 "proxy: Entier - De 0 à 4 (inclus) pour indiquer un niveau de proxy, 0 pour le désactiver, 4 pour rendre la\n"
 "       tâche longue.\n"
+"proxyWarn: Booléen - Indique si une demande est effectuée ou non lors d’une tentative de remplissage d’unen"
+"           traduction vide avec une traduction proxy.\n"
+"fromNID: Booleen - Indique si la chaine du nom de l’identifiant est préférée être à partir de 'fromFiles'n"
+"         ou de 'forFiles'.\n"
 "overwrite: Caractère - Devrait être : 'N' pour non, 'A' pour demande, ou 'F' pour force. (la verbosité est\n"
-"            recommandé avec 'A')\n"
+"           recommandé avec 'A')\n"
 "outdir: Chaîne - Un chemin relatif aux chemins 'forFiles' pour indiquer où enregistrer le résultat ou None\n"
 "        pour enregistrer sur-place.\n"
 "verbose: Entier - Indique le niveau de verbosité, 0 pour désactiver.\n"
 "debug: Booléen - Active ou non le débogage. La quantité sur cette fonction peut être énorme.\n"
 
-#: rpyTranslations.py:1268
+#: rpyTranslations.py:1302
 msgid "the 1st argument need to one of the following:"
 msgstr "le 1er argument doit correspondre à l’un des arguments suivants :"
 
-#: rpyTranslations.py:1268
+#: rpyTranslations.py:1302
 msgid ""
 "\n"
 "  not"
@@ -288,7 +295,7 @@ msgstr ""
 "\n"
 "  pas"
 
-#: rpyTranslations.py:1270
+#: rpyTranslations.py:1304
 #, python-brace-format
 # wide 110 (tabulations "\t" do not count)
 msgid ""
@@ -306,7 +313,26 @@ msgid ""
 "\t\t  See the specific help of these commands for more information.\n"
 "\t\toptions\n"
 "\t\t  They generaly can be put everywhere in the argument realm of command.\n"
+"\t\t  However, though they can be put in random order, they are treated by order of precedence and each\n"
+"\t\t   option can be specified only one times.\n"
+"\t\t  The precedence for an option is in right to left order (so, short version of options are always last).\n"
+"\t\t  Exemple, for `-% n, --multi n, --lists n`, the precedence is:\n"
+"\t\t      `--lists n` > `--multi n` > `-% n`\n"
+"\t\t  So if we have this: `-% 2 --multi 5 --lists 3`, only `--list 3` will be treated and retained and the\n"
+"\t\t   remaining will stay as is.\n"
+"\t\t  Some commands have inter-option precedences. This means that each options will be treated but only\n"
+"\t\t   the one with the greater precedence will be retained (see the specific helps for more details).\n"
+"\n"
 "\t\t  Though commands has their own set of options, here are some general options below:\n"
+"\t\t  --\n"
+"\t\t      This option allow to indicate where to stop interpreting options.\n"
+"\t\t      Exemple, in the following: `-d -- -v`, -d will activates the debug but -v will activates nothing\n"
+"\t\t       and stay as -v.\n"
+"\t\t  -:\n"
+"\t\t      This option should be directly followed (without spaces) by any characters.\n"
+"\t\t      These characters should each correspond to short version of options that do not requiered\n"
+"\t\t       arguments.\n"
+"\t\t      Exemple: `-:vd` correponding to `-v -d`.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Activate the verbosity during the process.\n"
 "\t\t      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.\n"
@@ -331,7 +357,28 @@ msgstr ""
 "\t\t  Consultez l’aide spécifique de ces commandes pour plus d’informations.\n"
 "\t\toptions\n"
 "\t\t  Elles peuvent généralement être placées partout dans le domaine des arguments de commande.\n"
+"\t\t  Cependant, bien qu’elles puissent être mises dans un ordre aléatoire, elles sont traitées par ordre de\n"
+"\t\t   priorité et chaque option ne peut être spécifiée qu’une seule fois.\n"
+"\t\t  L’ordre de priorité pour une option est de droite à gauche (la version courte des options est donc\n"
+"\t\t   toujours la dernière).\n"
+"\t\t  Exemple, pour `-% n, --multi n, --lists n`, la priorité est:\n"
+"\t\t      `--lists n` > `--multi n` > `-% n`\n"
+"\t\t  Donc, si nous avons ceci: `-% 2 --multi 5 --lists 3`, seul `--list 3` sera traité et conservé et le reste\n"
+"\t\t   restera tel quel.\n"
+"\t\t  Certaines commandes ont des priorités inter-options. Cela signifie que chacune des options sera\n"
+"\t\t   traitée, mais que seule celle ayant la priorité la plus grande sera conservée (voir les aides\n"
+"\t\t   spécifiques pour plus de détails).\n"
+"\n"
 "\t\t  Bien que les commandes aient leur propre jeu d’options, voici quelques options générales:\n"
+"\t\t  --\n"
+"\t\t      Cette option permet d’indiquer où arrêter l’interprétation des options.\n"
+"\t\t      Exemple, dans ce qui suit : `-d -- -v`, -d activera le débogage mais -v n’activera rien et restera\n"
+"\t\t       en tant que -v.\n"
+"\t\t  -:\n"
+"\t\t      Cette option doit être directement suivie (sans espaces) par des caractères.\n"
+"\t\t      Chacun de ces caractères devrait correspondre à la version courte des options qui ne nécessitent pas\n"
+"\t\t       d’arguments.\n"
+"\t\t      Exemple: `-:vd` correpond à `-v -d`.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Active la verbosité durant le processus.\n"
 "\t\t      lvl peut être passé pour définir le niveau de verbosité, 1 pour le niveau de base (par défaut) ou 2\n"
@@ -342,12 +389,12 @@ msgstr ""
 "\t\t  Consultez l’aide spécifique des commandes pour voir les autres options disponibles.\n"
 "\t\t"
 
-#: rpyTranslations.py:1295 rpyTranslations.py:1355 rpyTranslations.py:1385
-#: rpyTranslations.py:1419 rpyTranslations.py:1454 rpyTranslations.py:1491
+#: rpyTranslations.py:1348 rpyTranslations.py:1442 rpyTranslations.py:1472
+#: rpyTranslations.py:1506 rpyTranslations.py:1541 rpyTranslations.py:1578
 msgid "help commands do not accept any argument or option."
 msgstr "les commandes help n’acceptent aucun argument ou option."
 
-#: rpyTranslations.py:1298
+#: rpyTranslations.py:1351
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations populate [--help] for_files... from_files... [options]\n"
@@ -359,7 +406,7 @@ msgid ""
 "\t\toptions:\n"
 "\t\t  -h, --help\n"
 "\t\t      Show this specific help for the 'populate' command and exit.\n"
-"\t\t  --bunch\n"
+"\t\t  -b, --bunch\n"
 "\t\t      Indicates if, when a translation is not found, it should be searched for in other files in the\n"
 "\t\t       current from-files group.\n"
 "\t\t  --bulk [n]\n"
@@ -380,7 +427,7 @@ msgid ""
 "\t\t  -a, --ask\n"
 "\t\t      If put, a prompt will ask to confirm or no a replacement of translation (only for non-empty).\n"
 "\t\t      It’s recommand to use the verbose option with that, so you can know for what file the asking is.\n"
-"\t\t  -f, --force, --overwrite\n"
+"\t\t  -F, --force, --overwrite\n"
 "\t\t      Activate the replacement of existing translations.\n"
 "\t\t  --proxy lvl\n"
 "\t\t      If a translation is not found with the normals methods, so this option allow to use other methods\n"
@@ -394,12 +441,22 @@ msgid ""
 "\t\t               as 'strings', so 'strings' can now search in 'dialogs' translations.\n"
 "\t\t          4   The strings are compared to get a least a correspondance of 90%.\n"
 "\t\t              Please note that this can be a very long process.\n"
+"\t\t  -W, --no-proxy-warn\n"
+"\t\t      When attempting to populate empty translation with proxied translation, an asking is made.\n"
+"\t\t      This option allow to bypass this asking.\n"
+"\t\t  --proxy-y lvl\n"
+"\t\t      This option is the same as --proxy but with effect of --no-proxy-warn in addition.\n"
+"\t\t  -N, --from-nID\n"
+"\t\t      By default, the identifiant name’ string are takes from for_files, use this option if rather\n"
+"\t\t       prefere it’s to be from from_files.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Activate the verbosity during the process.\n"
 "\t\t      lvl can be pass to set the verbosity level, 1 for basic (default) or 2 for more verbosity.\n"
 "\t\t  -d, --debug\n"
 "\t\t      Activate the debug printings during the process. The output can be huge.\n"
 "\t\t* Please note that --ask take precedence over --force.\n"
+"\t\t* Please note that --proxy take precedence over --proxy-y (though the side effect of this one is kept)\n"
+"\t\t   and that --no-proxy-warn had no effect if --proxy-y is use too.\n"
 "\n"
 "\t\tPlease note that `populate --bulk 2 ./common.rpy ./init.rpy -% 1 ../from/common.rpy ../from/init.rpy`\n"
 "\t\t result to the same as `populate --bunch ./common.rpy ./init.rpy ../from/common.rpy ../from/init.rpy`\n"
@@ -415,7 +472,7 @@ msgstr ""
 "\t\toptions:\n"
 "\t\t  -h, --help\n"
 "\t\t      Affiche cette aide spécifique pour la commande 'populate' et quitte.\n"
-"\t\t  --bunch\n"
+"\t\t  -b, --bunch\n"
 "\t\t      Indique si, lorsqu’une traduction n’est pas trouvée, elle doit être recherchée dans les autres\n"
 "\t\t       fichiers du groupe fromFiles actif.\n"
 "\t\t  --bulk [n]\n"
@@ -439,7 +496,7 @@ msgstr ""
 "\t\t       non-vides).\n"
 "\t\t      Il est recommandé d’utiliser l’option verbose avec ceci, afin que vous puissiez savoir pour quel\n"
 "\t\t       fichier la demande est.\n"
-"\t\t  -f, --force, --overwrite\n"
+"\t\t  -F, --force, --overwrite\n"
 "\t\t      Active le remplacement des traductions existantes.\n"
 "\t\t  --proxy lvl\n"
 "\t\t      Si une traduction n’est pas trouvée avec les méthodes normales, cette option permet d’utiliser\n"
@@ -451,11 +508,20 @@ msgstr ""
 "\t\t          2   Pour 'dialogs', permet d’ignorer complètement l’identifiant de dialogue et en dernier recours\n"
 "\t\t               autorise la recherche dans les traductions 'strings', mais pas pour 'strings' dans les\n"
 "\t\t               traductions 'dialogs'.\n"
-"\t\t          3   Permet de se concentrer uniquement sur les chaînes. Avec cela, 'dialogs' peut maintenant être\n"
+"\t\t          3   Permet de se concentrer uniquement sur les chaines. Avec cela, 'dialogs' peut maintenant être\n"
 "\t\t               considéré comme identique à 'strings', de sorte que 'strings' peut maintenant rechercher\n"
 "\t\t               dans les traductions 'dialogs'.\n"
-"\t\t          4   Les chaînes sont comparées pour obtenir au moins une correspondance de 90%.\n"
+"\t\t          4   Les chaines sont comparées pour obtenir au moins une correspondance de 90%.\n"
 "\t\t              Veuillez noter que ce processus peut être très long.\n"
+"\t\t  -W, --no-proxy-warn\n"
+"\t\t      Lors d’une tentative de remplissage d’une traduction vide avec une traduction par proxy, une demande\n"
+"\t\t       est effectuée.\n"
+"\t\t      Cette option permet d’outrepasser cette demande.\n"
+"\t\t  --proxy-y lvl\n"
+"\t\t      Cette option est identique à --proxy mais avec l’effet de --no-proxy-warn en plus.\n"
+"\t\t  -N, --from-nID\n"
+"\t\t      Par défaut, la chaine du nom de l’identifiant est prise à partir de for_files, utilisez cette option\n"
+"\t\t       si vous préférez qu’elle soit prise à partir de from_files.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Active la verbosité durant le processus.\n"
 "\t\t      lvl peut être passé pour définir le niveau de verbosité, 1 pour le niveau de base (par défaut) ou 2\n"
@@ -463,13 +529,72 @@ msgstr ""
 "\t\t  -d, --debug\n"
 "\t\t      Active les impressions de débogage durant le processus. Veuillez noter que la sortie peut être énorme.\n"
 "\t\t* Notez que --ask a priorité sur --force.\n"
+"\t\t* Veuillez noter que --proxy a priorité sur --proxy-y (bien que l’effet secondaire de celle-ci soit\n"
+"\t\t   conservée) et que --no-proxy-warn n’a aucun effet si --proxy-y est également utilisé.\n"
 "\n"
 "\t\tVeuillez noter que `populate --bulk 2 ./common.rpy ./init.rpy -% 1 ../from/common.rpy ../from/init.rpy`\n"
 "\t\t résulte au même que `populate --bunch ./common.rpy ./init.rpy ../from/common.rpy ../from/init.rpy`\n"
 "\t\t mais est moins efficace.\n"
 "\t\t"
 
-#: rpyTranslations.py:1358
+#: rpyTranslations.py:1416
+#, python-brace-format
+# wide 110 (tabulations "\t" do not count)
+msgid ""
+"\n"
+"\t\tAdditional informations:\n"
+"\n"
+"\t\t- About the --ask option:\n"
+"\t\t    The patern to show askings is the following:\n"
+"\t\t      `\n"
+"\t\t      For: [for: old dID]\n"
+"\t\t      \t<for: old string>\n"
+"\t\t      Attempt to replace: [for: new dID]\n"
+"\t\t      \t<for: new string>\n"
+"\t\t      With: [with: dID]\n"
+"\t\t      \t<with: string>\n"
+"\t\t      `\n"
+"\t\t    The presence of dID parts depends of the translation’ kind (string or dialog translation).\n"
+"\t\t    Only dialog translations can contain a dID, and if one doesn't have one, it will be showed as {0}.\n"
+"\t\t    It’s important to note that the dID contains two parts, the first part is a NID (name identifiant)\n"
+"\t\t     and the second is image arguments.\n"
+"\t\t    As mentioned above, only the NID can be affect by the --from-nID option, this means that first, the\n"
+"\t\t     dID is get in the following order of precedence:\n"
+"\t\t      [for: new dID] > [for: old dID]\n"
+"\t\t     and then, if the --from-nID option is use, the NID can be take from the [with: dID] if:\n"
+"\t\t      1) the previously get dID is not {0} and it NID is of string type\n"
+"\t\t      2) this [with: dID] is not {0} and it NID is of string type\n"
+"\t\t     otherwise, the NID from the previously get dID is keep.\n"
+"\t\t"
+msgstr ""
+"\n"
+"\t\tInformations supplémentaires:\n"
+"\n"
+"\t\t- À propos de l’option --ask:\n"
+"\t\t    Le modèle utilisé pour afficher les demandes est le suivant :\n"
+"\t\t      `\n"
+"\t\t      Pour: [pour: ancien dID]\n"
+"\t\t      \t<pour: ancienne chaine>\n"
+"\t\t      Tente de remplacer: [pour: nouveau dID]\n"
+"\t\t      \t<pour: nouvelle chaine>\n"
+"\t\t      Avec: [avec: dID]\n"
+"\t\t      \t<avec: chaine>\n"
+"\t\t      `\n"
+"\t\t    La présence de parties dID dépend du type de traduction (traduction de chaine ou de dialogue).\n"
+"\t\t    Seules les traductions de dialogue peuvent contenir un dID, et si l’une d’elles n’en a pas, elle sera\n"
+"\t\t     affichée comme {0}.\n"
+"\t\t    Il est important de noter que le dID contient deux parties, la première partie est un NID (nom\n"
+"\t\t     identifiant) et la seconde est des arguments d’image.\n"
+"\t\t    Comme mentionné plus haut, seul le NID peut être affecté par l’option --from-nID, cela signifie que,\n"
+"\t\t     d’abord, le dID est obtenu dans l’ordre de priorité suivant :\n"
+"\t\t      [pour: nouveau dID] > [pour: ancien dID]\n"
+"\t\t     et qu’ensuite, si l’option --from-nID est utilisée, le NID peut être pris de [avec: dID] si :\n"
+"\t\t      1) le dID obtenu précédemment n’est pas {0} et son NID est de type chaine\n"
+"\t\t      2) ce [avec: dID] n’est pas {0} et que son NID est de type chaine\n"
+"\t\t     sinon, le NID du dID obtenu précédemment est conservé.\n"
+"\t\t"
+
+#: rpyTranslations.py:1445
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations fix-empty [--help] for_files... [options]\n"
@@ -525,7 +650,7 @@ msgstr ""
 "\t\t      Active les impressions de débogage durant le processus. Veuillez noter que la sortie peut être énorme.\n"
 "\t\t"
 
-#: rpyTranslations.py:1388
+#: rpyTranslations.py:1475
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations check [--help] for_files... [options]\n"
@@ -589,7 +714,7 @@ msgstr ""
 "\t\t* Veuillez noter que --skip-empty a priorité sur --not-translate qui a priorité sur --empty.\n"
 "\t\t"
 
-#: rpyTranslations.py:1422
+#: rpyTranslations.py:1509
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations diff [--help] for_files... [options]\n"
@@ -623,38 +748,41 @@ msgid ""
 "\t\t      Activate the debug printings during the process. The output can be huge.\n"
 "\t\t"
 msgstr ""
-"\t\trpyTranslations check [--help] for_files... [options]\n"
+"\t\trpyTranslations diff [--help] for_files... [options]\n"
 "\n"
-"\t\tfor_files sont les fichiers où vérifier les traductions.\n"
+"\t\tfor_files et from_files sont des successions de fichiers dont la longueur doit être égale.\n"
+"\t\tfor_files sont les fichiers dans lesquels les différences de traduction doivent être comparées.\n"
+"\t\tfrom_files sont les fichiers de référence à partir desquels les autres traductions sont obtenues pour la\n"
+"\t\t comparaison.\n"
+"\n"
+"\t\tComme cette commande est destinée à comparer les ajouts et suppressions dans les for-files, il n’y a pas\n"
+"\t\t d’option proxy, et évidemment, la traduction vide et le mot clé 'pass' sont traités comme différents.\n"
 "\n"
 "\t\toptions:\n"
 "\t\t  -h, --help\n"
-"\t\t      Affiche cette aide spécifique pour la commande 'check' et quitte.\n"
-"\t\t  -n, --skip-empty\n"
-"\t\t      Désactive les vérifications pour les traductions vides.\n"
-"\t\t  -e, --empty\n"
-"\t\t      Par défaut. Vérifie combien de traductions sont encore vides.\n"
-"\t\t  -p, --not-translate\n"
-"\t\t     Vérifie combien de traductions sont encore vides ou définies avec le mot clé 'pass'.\n"
-"\t\t  --where\n"
-"\t\t      Sortie ou non de où se trouvent les traductions vides.\n"
-"\t\t      Veuillez noter que cette option n’a aucun effet si elle est mise avec l’option --skip-empty.\n"
-"\t\t  -f, --format\n"
-"\t\t      Parfois, les espaces de début/fin peuvent être des fautes de frappe, mais généralement ils sont\n"
-"\t\t       intentionnels (surtout lorsqu’un 'extended' est utilisé).\n"
-"\t\t      Vérifie que les traductions ont conservé toutes formes de formatage et que les espaces de début/fin\n"
-"\t\t       sont respectés.\n"
-"\t\t      * Formatages tels que crochets ([]) et accolades ({}).\n"
+"\t\t      Affiche cette aide spécifique pour la commande 'diff' et quitte.\n"
+"\t\t  --ignore-newpart\n"
+"\t\t      Indique si les comparaisons de partie 'new' des traductions doivent être sur la sortie ou non.\n"
+"\t\t  --what\n"
+"\t\t      Indique si ce qui est ajouté ou qui n'est plus présent dans les fichiers de traduction doit être en\n"
+"\t\t       sortie ou non.\n"
+"\t\t  --reflines\n"
+"\t\t      Indique si les comparaisons des lignes de référence doivent être sur la sortie ou non.\n"
+"\t\t  --tr-id\n"
+"\t\t      Indique si les comparaisons des identifiants de translation doivent être sur la sortie ou non.\n"
+"\t\t  -% n, --multi n, --lists n\n"
+"\t\t      Ceci permet d’indiquer le nombre de listes à partir desquelles les autres traductions sont obtenues.\n"
+"\t\t       Cela inclut le premier groupe de fichiers (le for_files).\n"
+"\t\t      Donc, pour 2 for_files, vous devez le mettre avec 3.\n"
 "\t\t  -v [lvl], --verbose [lvl]\n"
 "\t\t      Active la verbosité durant le processus.\n"
 "\t\t      lvl peut être passé pour définir le niveau de verbosité, 1 pour le niveau de base (par défaut) ou 2\n"
 "\t\t       pour plus de verbosité.\n"
 "\t\t  -d, --debug\n"
 "\t\t      Active les impressions de débogage durant le processus. Veuillez noter que la sortie peut être énorme.\n"
-"\t\t* Veuillez noter que --skip-empty a priorité sur --not-translate qui a priorité sur --empty.\n"
 "\t\t"
 
-#: rpyTranslations.py:1457
+#: rpyTranslations.py:1544
 # wide 110 (tabulations "\t" do not count)
 msgid ""
 "\t\trpyTranslations reorder [--help] for_files... [options]\n"
@@ -725,23 +853,29 @@ msgstr ""
 "\t\t      Active les impressions de débogage durant le processus.\n"
 "\t\t"
 
-#: rpyTranslations.py:1551 rpyTranslations.py:1556 rpyTranslations.py:1561
-#: rpyTranslations.py:1566 rpyTranslations.py:1644 rpyTranslations.py:1649
-#: rpyTranslations.py:1654
-msgid "{} option should be an integer, give"
+#: rpyTranslations.py:1598
+msgid "Missing argument:"
+msgstr "Argument manquant :"
+
+#: rpyTranslations.py:1598
+msgid "{} option required an argument."
+msgstr "l’option {} requière un argument."
+
+#: rpyTranslations.py:1602
+msgid "{} option should be an integer, give:"
 msgstr "l’option {} doit être un entier, donné"
 
-#: rpyTranslations.py:1571
+#: rpyTranslations.py:1635
 msgid "{} option should be an absolute integer"
 msgstr "l’option {} doit être un entier absolu, donné"
 
-#: rpyTranslations.py:1574 rpyTranslations.py:1581 rpyTranslations.py:1670
+#: rpyTranslations.py:1638 rpyTranslations.py:1645 rpyTranslations.py:1680
 #, python-brace-format
 msgid "The file pair lists need to have equal length, {N} gived."
 msgid_plural "The file pair lists need to have equal length, {N} gived."
 msgstr[0] "Les listes de paires de fichiers doivent avoir une longueur égale, {N} donnée."
 msgstr[1] "Les listes de paires de fichiers doivent avoir une longueur égale, {N} données."
 
-#: rpyTranslations.py:1716
+#: rpyTranslations.py:1714
 msgid "An error occured:\n"
 msgstr "Une erreur s’est produite :\n"
