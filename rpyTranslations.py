@@ -713,12 +713,12 @@ def check(forFiles, /, untranslated=1, where=False, formats=False, *, verbose=0,
 						else:# frm[1] == "attr":
 							S += f" Dialog-identifier attributes changed\n<\t{frm[2]}\n>\t{frm[3]}"
 					elif frm[0] == "post-args":
-						if frm[0] == "lost":
-							S += f" Dialog post-string arguments: LOST\n<\t{frm[1]}"
-						elif frm[0] == "gained":
-							S += f" Dialog post-string arguments: GAINED\n>\t{frm[1]}"
-						else:# frm[0] == "changed":
-							S += f" Dialog post-string arguments: CHANGED\n<\t{frm[1]}\n>\t{frm[2]}"
+						if frm[1] == "lost":
+							S += f" Dialog post-string arguments: LOST\n<\t{frm[2]}"
+						elif frm[1] == "gained":
+							S += f" Dialog post-string arguments: GAINED\n>\t{frm[2]}"
+						else:# frm[1] == "changed":
+							S += f" Dialog post-string arguments: CHANGED\n<\t{frm[2]}\n>\t{frm[3]}"
 					else:
 						at_pos = [str(n) for n in frm[0]]
 						if frm[1] == "Leading white-spaces":
@@ -1427,7 +1427,7 @@ if __name__ == '__main__':
 		      	<with: string>
 		      `
 		    The presence of dID parts depends of the translation’ kind (string or dialog translation).
-		    Only dialog translations can contain a dID, and if one doesn't have one, it will be showed as {0}.
+		    Only dialog translations can contain a dID, and if one doesn’t have one, it will be showed as {0}.
 		    It’s important to note that the dID contains two parts, the first part is a NID (name identifiant)
 		     and the second is image arguments.
 		    As mentioned above, only the NID can be affect by the --from-nID option, this means that first, the
