@@ -555,6 +555,7 @@ def check(forFiles, /, untranslated=1, where=False, formats=False, *, verbose=0,
 			Throw(FileNotFoundError,repr(forF),_("doen’t exist or is not a file"))
 		if forF in forFiles[:i]: Throw(Exception,_("All files need to be different"))
 
+	RE_Q = re.compile(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ))
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	file_cache, frm_res = {}, {}
@@ -605,11 +606,11 @@ def check(forFiles, /, untranslated=1, where=False, formats=False, *, verbose=0,
 				if T == 1:
 					if not M.group('dID') is None:
 						nId,nid = M.group('old_NID'), M.group('new_NID')
-						if not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), nId) is None:
+						if not RE_Q.match(nId) is None:
 							if nId == nid:
 								xVerb("The new string name of the dialog-identifier as not changed from:",nId)
 								res.append(("dialog-id","name-str",nId))
-							elif M.group('dID') != M.group('new_dID'):# For now it will also match for the translated name difference, but it is ok
+							elif M.group('idA') != M.group('new_idA'):
 								dId,did = M.group('dID'), M.group('new_dID')
 								xVerb("The new dialog-identifier as changed from:",dId,"to:",did)
 								res.append(("dialog-id","attr",dId,did))
@@ -617,7 +618,7 @@ def check(forFiles, /, untranslated=1, where=False, formats=False, *, verbose=0,
 							if nId != nid:
 								xVerb("The new name of the dialog-identifier as changed from:",nId,"to:",nid)
 								res.append(("dialog-id","name",nId,nid))
-							elif M.group('dID') != M.group('new_dID'):
+							elif M.group('idA') != M.group('new_idA'):
 								dId,did = M.group('dID'), M.group('new_dID')
 								xVerb("The new dialog-identifier as changed from:",dId,"to:",did)
 								res.append(("dialog-id","attr",dId,did))
@@ -1015,6 +1016,7 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, proxyWarn=T
 				elif not fl: popFiles.append(forF)
 			fl = True
 
+	RE_Q = re.compile(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ))
 	RE_string = re.compile(reString.format(old=r'old +(?P<old_str>{Q})'.format(Q=reDQ), new=r'new +(?P<new_str>{P})'.format(P=reP), rID=reRID), re.M|re.S)
 	RE_dialog = re.compile(reDialog.format(old=r'# ({N} +)?(?P<old_str>{Q})'.format(N=reN_old, Q=reDQ), new=r'({Pass}|({N} +)?(?P<new_str>{P}))'.format(N=reN_new, P=reP, Pass=rePass), py=rePy, rID=reRID), re.M|re.S)
 	RE_x = re.compile(reFrm)
@@ -1026,9 +1028,9 @@ def populate(forFiles, *FromFiles, bunch=False, bulk=False, proxy=0, proxyWarn=T
 		if dID is None: dID = ""
 		else:
 			_dID = RE_dID.search(dID)
-			strID = not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), _dID.group('new_NID')) is None
+			strID = not RE_Q.match(_dID.group('new_NID')) is None
 			if fromNID and strID and not M_from.group('new_dID') is None:
-				f_strID = not re.match(r'^{SQ}|{DQ}$'.format(SQ=reSQ,DQ=reDQ), M_from.group('new_NID')) is None
+				f_strID = not RE_Q.match(M_from.group('new_NID')) is None
 				if f_strID:
 					dID = RE_dID.sub(r'{NID}\g<new_idA>'.format(NID=M_from.group('new_NID')), dID)+" "
 				else: dID += " "

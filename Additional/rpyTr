@@ -1,0 +1,76 @@
+#!/bin/bash -i
+set -o posix +o history
+cur_dir=$PWD
+path="<path_to_rpyTranslations_dir>"#ex: $HOME/Documents/Python3
+mkdir -p ./temp-rpyStats/uni ./temp-rpyStats/rpy
+uni=$1; rpy=$2; unis=""; rpys=""
+if [ "$3" == '%' ]; then
+   withF=true
+   while [ $# -gt 3 ]; do
+      f="$4"; shift
+      unis="$unis $f"; rpys="$rpys $f"
+   done
+else withF=false
+fi
+files=""
+if test $withF == false; then
+   for f in `find "$uni" -maxdepth 1 -name "*.rpy"`; do
+      _f="${f##*/}"
+      unis="$unis ${_f%.rpy}"
+      sh -c -- "ln -P -t ./temp-rpyStats/uni/ $(printf "%q" "`realpath "$f"`")"
+      files="$files $(printf "%q" "`realpath "./temp-rpyStats/uni/$_f"`")"
+   done
+else
+   for f in $unis; do
+      _f="$f.rpy"
+      sh -c -- "ln -P -t ./temp-rpyStats/uni/ $(printf "%q" "`realpath "$uni/$_f"`")"
+      files="$files $(printf "%q" "`realpath "./temp-rpyStats/uni/$_f"`")"
+   done
+fi
+echo "Files:$(echo "$files" |perl -ap -e 's/(?<!\\) /\n/g ; s/\\ / /g')"
+cd "$path"
+/bin/sh -c -- "python3 -m rpyTranslations check --not-translate -- $files"
+cd "$cur_dir"
+echo
+files=""
+if test $withF == false; then
+   for f in `find "$rpy" -maxdepth 1 -name "*.rpy"`; do
+      _f="${f##*/}"
+      rpys="$rpys ${_f%.rpy}"
+      sh -c -- "ln -P -t ./temp-rpyStats/rpy/ $(printf "%q" "`realpath "$f"`")"
+      files="$files $(printf "%q" "`realpath "./temp-rpyStats/rpy/$_f"`")"
+   done
+else
+   for f in $rpys; do
+      _f="$f.rpy"
+      sh -c -- "ln -P -t ./temp-rpyStats/rpy/ $(printf "%q" "`realpath "$rpy/$_f"`")"
+      files="$files $(printf "%q" "`realpath "./temp-rpyStats/rpy/$_f"`")"
+   done
+fi
+echo "Files:$(echo "$files" |perl -ap -e 's/(?<!\\) /\n/g ; s/\\ / /g')"
+cd "$path"
+/bin/sh -c -- "python3 -m rpyTranslations check --not-translate -- $files"
+cd "$cur_dir"
+echo
+for uF in $unis; do
+   uFile="./temp-rpyStats/uni/$uF.check-info"
+   uS=$(grep -m 1 "^Not translated:" $uFile |grep -o "[0-9]\+$")
+   if [ "`echo $rpys |grep -o "\b$uF\b"`" != "" ]; then
+      rFile="./temp-rpyStats/rpy/$uF.check-info"
+      rS=$(($uS - $(grep -m 1 "^Not translated:" $rFile |grep -o "[0-9]\+$")))
+      echo "`cat <<eof
+Total: $uS
+Translated: $rS
+Percentage: $((($rS * 100) / $uS))
+eof
+      `" > "./$uF.rpy.stat"
+   else
+      echo "`cat <<eof
+Total: $uS
+Translated: 0
+Percentage: 0
+eof
+      `" > "./$uF.rpy.stat"
+   fi
+done
+rm -R ./temp-rpyStats
